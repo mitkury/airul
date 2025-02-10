@@ -13,22 +13,32 @@ describe('initProject', () => {
     await cleanupTestOutputs();
   });
 
-  it('should create basic project structure', async () => {
+  it('should create basic project structure and update package.json', async () => {
     await createTestDir(TEST_DIRS.BASIC_INIT);
     const result = await initProject(TEST_DIRS.BASIC_INIT);
+
+    // Check package.json
+    const pkgPath = path.join(TEST_DIRS.BASIC_INIT, 'package.json');
+    const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
+
+    // Should have rules script
+    expect(pkg.scripts).toHaveProperty('rules', 'airule generate');
+
+    // Should have airule as dev dependency
+    expect(pkg.devDependencies).toHaveProperty('airule');
 
     // Check result
     expect(result).toEqual({
       configCreated: true,
-      gitignoreUpdated: true,
       docsCreated: true,
-      taskCreated: false
+      taskCreated: false,
+      packageUpdated: true
     });
 
     // Check files
     const files = await fs.readdir(TEST_DIRS.BASIC_INIT);
     expect(files).toContain('.airulerc.json');
-    expect(files).toContain('.gitignore');
+
     expect(files).toContain('docs');
 
     // Check config content
@@ -48,9 +58,9 @@ describe('initProject', () => {
     // Check result
     expect(result).toEqual({
       configCreated: true,
-      gitignoreUpdated: true,
       docsCreated: true,
-      taskCreated: true
+      taskCreated: true,
+      packageUpdated: true
     });
 
     // Check files

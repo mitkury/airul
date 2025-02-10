@@ -4,7 +4,7 @@ AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-
 
 ## Quick Start
 
-1. Install the package:
+1. Install the package globally (recommended for initialization):
    ```bash
    npm install -g airule
    ```
@@ -20,8 +20,11 @@ AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-
 
    Basic initialization will:
    - Create `.airulerc.json` with default configuration
-   - Update `.gitignore` to exclude rule files
    - Create a `docs` directory if it doesn't exist
+   - Add airule as a dev dependency to your project
+   - Add an npm script: `npm run rules`
+
+   Note: You may want to add `.windsurfrules` and `.cursorrules` to your `.gitignore` if you don't want to commit these files.
 
    When providing a task, it will also:
    - Create `TODO-AI.md` with your task instructions
@@ -30,6 +33,10 @@ AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-
 
 3. Generate rules:
    ```bash
+   # Using local installation (recommended)
+   npm run rules
+
+   # Or using global installation
    airule generate
    ```
 

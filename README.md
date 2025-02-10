@@ -5,17 +5,17 @@ Generate rules from your documentation for Cursor, Windsurf, and other AI-powere
 ## Quick Start
 
 ```bash
-# Install globally
+# Install globally (recommended for init)
 npm install -g airule
 
-# Initialize project
+# Initialize project (this will add airule as a dev dependency)
 airule init
 
 # Or start with an AI task
 airule init "Create a React component"
 
-# Generate rules
-airule generate
+# Generate rules using local installation
+npm run rules
 ```
 
 ## Features
@@ -44,7 +44,7 @@ Create `.airulerc.json`:
 
 Run:
 ```bash
-airule generate
+npm run rules
 ```
 
 ## License

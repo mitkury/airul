@@ -29,6 +29,10 @@ program
       if (result.taskCreated) {
         console.log('- Created TODO-AI.md with your task');
       }
+      if (result.packageUpdated) {
+        console.log('- Added airule as dev dependency');
+        console.log('- Added npm script: npm run rules');
+      }
       
       console.log('\nNext steps:');
       if (result.taskCreated) {
@@ -36,7 +40,7 @@ program
         console.log('2. The AI will see your task and help you complete it');
       } else {
         console.log('1. Add your documentation to README.md and docs/');
-        console.log('2. Run `airule generate` to create rule files');
+        console.log('2. Run `npm run rules` to generate rule files');
       }
     } catch (error: any) {
       console.error('Error:', error.message);

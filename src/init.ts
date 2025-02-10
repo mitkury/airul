@@ -1,5 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 const defaultConfig = {
   sources: [
@@ -15,9 +17,34 @@ const defaultConfig = {
 
 interface InitResult {
   configCreated: boolean;
-  gitignoreUpdated: boolean;
   docsCreated: boolean;
   taskCreated?: boolean;
+  packageUpdated?: boolean;
+}
+
+async function updatePackageJson(cwd: string): Promise<boolean> {
+  const pkgPath = path.join(cwd, 'package.json');
+  
+  // Create package.json if it doesn't exist
+  if (!existsSync(pkgPath)) {
+    execSync('npm init -y', { stdio: 'inherit', cwd });
+  }
+
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  
+  // Add scripts if they don't exist
+  pkg.scripts = pkg.scripts || {};
+  if (!pkg.scripts.rules) {
+    pkg.scripts.rules = 'airule generate';
+  }
+
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+
+  // Install airule as dev dependency
+  console.log('Installing airule as dev dependency...');
+  execSync('npm install --save-dev airule@latest', { stdio: 'inherit', cwd });
+  
+  return true;
 }
 
 export async function initProject(cwd: string, task?: string): Promise<InitResult> {
@@ -38,22 +65,7 @@ export async function initProject(cwd: string, task?: string): Promise<InitResul
     JSON.stringify(defaultConfig, null, 2)
   );
 
-  // Update .gitignore
-  const gitignorePath = path.join(cwd, '.gitignore');
-  const ignoreRules = '\n# AIRule\n.windsurfrules\n.cursorrules\n';
-  
-  try {
-    const existingContent = await fs.readFile(gitignorePath, 'utf-8');
-    if (!existingContent.includes('.windsurfrules')) {
-      await fs.appendFile(gitignorePath, ignoreRules);
-    }
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      await fs.writeFile(gitignorePath, ignoreRules.trim());
-    } else {
-      throw error;
-    }
-  }
+
 
   // Check for docs directories
   const docsPath = path.join(cwd, 'docs');
@@ -99,10 +111,13 @@ ${task}
     taskCreated = true;
   }
 
+  // Update package.json and install dependencies
+  const packageUpdated = await updatePackageJson(cwd);
+
   return {
     configCreated: true,
-    gitignoreUpdated: true,
     docsCreated: true,
-    taskCreated
+    taskCreated,
+    packageUpdated
   };
 }
