@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "test:cleanup": "rm -rf test/__test_outputs__",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build"
   },

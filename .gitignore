@@ -24,7 +24,7 @@ coverage/
 Thumbs.db
 
 # Test outputs
-test/output/
+test/__test_outputs__/
 
 .windsurfrules
 .cursorrules

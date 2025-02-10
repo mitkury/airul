@@ -8,7 +8,13 @@ Generate rules from your documentation for Cursor, Windsurf, and other AI-powere
 # Install globally
 npm install -g airule
 
-# Generate rules in your project
+# Initialize project
+airule init
+
+# Or start with an AI task
+airule init "Create a React component"
+
+# Generate rules
 airule generate
 ```
 

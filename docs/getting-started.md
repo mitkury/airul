@@ -9,7 +9,26 @@ AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-
    npm install -g airule
    ```
 
-2. Run in your project:
+2. Initialize in your project:
+   ```bash
+   # Basic initialization
+   airule init
+
+   # Or initialize with a task for AI
+   airule init "Create a React component"
+   ```
+
+   Basic initialization will:
+   - Create `.airulerc.json` with default configuration
+   - Update `.gitignore` to exclude rule files
+   - Create a `docs` directory if it doesn't exist
+
+   When providing a task, it will also:
+   - Create `TODO-AI.md` with your task instructions
+   - AI tools will see this file and help you complete the task
+   - The file will be removed once the task is complete
+
+3. Generate rules:
    ```bash
    airule generate
    ```
