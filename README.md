@@ -1,69 +1,44 @@
 # AIRule
 
-CLI tool for generating AI rules from project documentation.
+Generate rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs.
 
-## Installation
-
-```bash
-npm install airule
-```
-
-## Usage
-
-### CLI
+## Quick Start
 
 ```bash
-# Basic usage - generates both .windsurfrules and .cursorrules
-npx airule generate
+# Install globally
+npm install -g airule
 
-# Disable specific outputs
-npx airule generate --no-windsurf
-npx airule generate --no-cursor
-
-# Add custom output file
-npx airule generate --custom-output rules.txt
-
-# Use custom configuration
-npx airule generate --config .airulerc.json
+# Generate rules in your project
+airule generate
 ```
 
-### JavaScript/TypeScript API
+## Features
 
-```typescript
-import { generateRules } from 'airule';
+- 🎯 Automatically generate rules (`.windsurfrules` and `.cursorrules`) from your docs
+- 📝 Works with any text files (markdown, txt, etc.)
+- ⚙️ Simple output configuration
 
-await generateRules({
-  sources: ['README.md', 'docs/*.md'],
-  output: {
-    windsurf: true,
-    cursor: true,
-    customPath: 'custom-rules.txt'
-  }
-});
-```
+## Documentation
 
-## Configuration
+- [Getting Started Guide](docs/getting-started.md)
+- [Writing Effective Rules](docs/rules-guide.md)
 
-Create an `.airulerc.json` file:
+## Example
 
+Create `.airulerc.json`:
 ```json
 {
-  "sources": [
-    "README.md",
-    "docs/*.md",
-    "CONTRIBUTING.md"
-  ],
+  "sources": ["README.md", "docs/*.md", "*.txt"],
   "output": {
     "windsurf": true,
-    "cursor": true,
-    "customPath": "custom-rules.txt"
-  },
-  "template": {
-    "header": "# AI Rules for {projectName}",
-    "fileHeader": "## From {fileName}:",
-    "separator": "\n---\n"
+    "cursor": true
   }
 }
+```
+
+Run:
+```bash
+airule generate
 ```
 
 ## License

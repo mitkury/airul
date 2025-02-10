@@ -22,3 +22,9 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test outputs
+test/output/
+
+.windsurfrules
+.cursorrules
