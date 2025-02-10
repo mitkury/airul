@@ -8,11 +8,13 @@
     "airule": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
     "test": "jest",
     "test:cleanup": "rm -rf test/__test_outputs__",
     "lint": "eslint src/**/*.ts",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "version": "node scripts/update-cli-version.js && git add src/cli.ts"
   },
   "keywords": [
     "ai",

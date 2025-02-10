@@ -6,17 +6,19 @@ import { loadConfig } from './config';
 import { AiruleConfig } from './types';
 import { initProject } from './init';
 
+const { version } = require('../package.json');
+
 const program = new Command();
 
 program
   .name('airule')
-  .description('Generate AI context rules from project documentation')
-  .version('0.1.0');
+  .description('Generate rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs')
+  .version(version);
 
 program
   .command('init')
-  .description('Initialize AIRule in your project')
-  .argument('[task]', 'Task description for AI')
+  .description('Initialize AIRule in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
+  .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
   .action(async (task) => {
     try {
       const result = await initProject(process.cwd(), task);
@@ -44,12 +46,12 @@ program
 
 program
   .command('generate')
-  .description('Generate AI rules from documentation')
-  .option('-c, --config <path>', 'path to config file')
-  .option('-f, --files <globs...>', 'source files to process')
-  .option('--no-windsurf', 'disable .windsurfrules output')
-  .option('--no-cursor', 'disable .cursorrules output')
-  .option('--custom-output <path>', 'custom output file path')
+  .description('Generate AI rules by scanning your documentation files. Creates .windsurfrules and .cursorrules files that help AI tools understand your project.')
+  .option('-c, --config <path>', 'Path to .airulerc.json config file. Default: .airulerc.json in current directory')
+  .option('-f, --files <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
+  .option('--no-windsurf', 'Disable .windsurfrules output for Windsurf IDE')
+  .option('--no-cursor', 'Disable .cursorrules output for Cursor IDE')
+  .option('--custom-output <path>', 'Path for additional custom rules output file')
   .action(async (options) => {
     try {
       const config = await loadConfig(options.config);
