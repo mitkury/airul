@@ -6,10 +6,45 @@ import { loadConfig } from './config';
 import { AirulConfig } from './types';
 import { initProject } from './init';
 import { createNewProject } from './new';
+import { execSync, spawn } from 'child_process';
 
 const { version } = require('../package.json');
 
+async function checkAndSelfUpdate(verbose = false): Promise<boolean> {
+  try {
+    // Get the latest version from npm
+    const latestVersion = execSync('npm show airul version', { encoding: 'utf8' }).trim();
+    
+    if (latestVersion !== version) {
+      if (verbose) {
+        console.log('📦 Updating AIrul...');
+        console.log(`Current version: ${version}`);
+        console.log(`Latest version:  ${latestVersion}`);
+      }
+      // Install the latest version globally
+      execSync('npm install -g airul@latest', { stdio: verbose ? 'inherit' : 'ignore' });
+      if (verbose) {
+        console.log('✨ Successfully updated to latest version');
+      }
+      return true;
+    } else if (verbose) {
+      console.log('✨ AIrul is already at the latest version');
+    }
+    return false;
+  } catch (error) {
+    if (verbose) {
+      console.error('Error checking for updates:', error);
+    }
+    return false;
+  }
+}
+
 const program = new Command();
+
+// Check for updates after command execution
+program.hook('postAction', async () => {
+  await checkAndSelfUpdate(false);
+});
 
 program
   .name('airul')
@@ -17,14 +52,22 @@ program
   .version(version);
 
 program
+  .command('update')
+  .aliases(['upgrade', 'u'])
+  .description('Update Airul to the latest version')
+  .action(async () => {
+    await checkAndSelfUpdate(true);
+  });
+
+program
   .command('init')
   .aliases(['i', 'initialize'])
-  .description('Initialize AIrul in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
+  .description('Initialize Airul in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
   .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
   .action(async (task) => {
     try {
       const result = await initProject(process.cwd(), task);
-      console.log('✨ AIrul initialized successfully!');
+      console.log('✨ Airul initialized successfully!');
       console.log('- Created .airulrc.json with default configuration');
       console.log('- Updated .gitignore');
       console.log('- Created docs directory');
@@ -84,7 +127,7 @@ program
 program
   .command('new')
   .aliases(['n'])
-  .description('Create a new project directory and initialize AIrul')
+  .description('Create a new project directory and initialize Airul')
   .argument('<directory>', 'Directory name for the new project')
   .argument('<task>', 'Task description that will be used to generate AI-specific instructions')
   .option('--cursor', 'Open project in Cursor')
