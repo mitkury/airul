@@ -4,6 +4,7 @@ import { TEST_DIRS } from './constants';
 import { cleanupTestDir, createDir } from './utils';
 import { initProject } from '../src/init';
 import { generateRules } from '../src/generator';
+import * as fs from 'fs/promises';
 
 describe('init command', () => {
   let originalCwd: string;
@@ -24,7 +25,6 @@ describe('init command', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    // Removed cleanup to preserve test outputs
   });
 
   it('should create .airul.json in new project', async () => {
@@ -78,49 +78,5 @@ describe('init command', () => {
     // Original config should be preserved
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toEqual({ existing: true });
-  });
-
-  it('should create package.json if it does not exist', async () => {
-    const result = await initProject(TEST_DIRS.INIT, undefined, true);
-    expect(result.packageUpdated).toBe(true);
-
-    const pkgPath = join(TEST_DIRS.INIT, 'package.json');
-    const pkg = JSON.parse(await readFile(pkgPath, 'utf8'));
-    
-    expect(pkg.scripts.rules).toBe('airul generate');
-    expect(pkg.devDependencies.airul).toBe('latest');
-  });
-
-  it('should update existing package.json', async () => {
-    // Create existing package.json with some content
-    const existingPkg = {
-      name: 'test-project',
-      version: '1.0.0',
-      scripts: {
-        test: 'jest',
-        start: 'node index.js'
-      },
-      devDependencies: {
-        jest: '^29.0.0'
-      }
-    };
-    await writeFile(
-      join(TEST_DIRS.INIT, 'package.json'),
-      JSON.stringify(existingPkg, null, 2)
-    );
-
-    const result = await initProject(TEST_DIRS.INIT, undefined, true);
-    expect(result.packageUpdated).toBe(true);
-
-    const pkg = JSON.parse(await readFile(join(TEST_DIRS.INIT, 'package.json'), 'utf8'));
-    
-    // Should preserve existing content
-    expect(pkg.scripts.test).toBe('jest');
-    expect(pkg.scripts.start).toBe('node index.js');
-    expect(pkg.devDependencies.jest).toBe('^29.0.0');
-    
-    // Should add new content
-    expect(pkg.scripts.rules).toBe('airul generate');
-    expect(pkg.devDependencies.airul).toBe('latest');
   });
 });

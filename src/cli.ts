@@ -74,13 +74,8 @@ program
       } else if (result.gitExists) {
         console.log('- Using existing git repository');
       }
-      console.log('- Created docs directory');
       if (result.taskCreated) {
         console.log('- Created TODO-AI.md with your task');
-      }
-      if (result.packageUpdated) {
-        console.log('- Added airul as dev dependency');
-        console.log('- Added npm script: npm run rules');
       }
       if (result.rulesGenerated) {
         console.log('- Generated initial AI rules');
@@ -91,11 +86,11 @@ program
         console.log('1. Open your project in an AI-powered IDE');
         console.log('2. The AI will see your task and help you complete it');
       } else if (!result.rulesGenerated) {
-        console.log('1. Add your documentation to README.md and docs/');
-        console.log('2. Run `npm run rules` to generate rule files');
+        console.log('1. Add your documentation to README.md or other files');
+        console.log('2. Run airul generate to generate rule files');
       } else {
-        console.log('1. Add more documentation to README.md and docs/');
-        console.log('2. Run `npm run rules` to update rule files');
+        console.log('1. Add more documentation to your project');
+        console.log('2. Run airul generate to update rule files');
       }
     } catch (error: any) {
       console.error('Error:', error.message);

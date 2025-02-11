@@ -23,7 +23,6 @@ describe('new command', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    // Removed cleanup to preserve test outputs
   });
 
   it('should create new project directory with config', async () => {

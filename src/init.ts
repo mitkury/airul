@@ -4,11 +4,6 @@ import { execSync } from 'child_process';
 import { join } from 'path';
 import { generateRules } from './generator';
 
-async function getLatestVersion(): Promise<string> {
-  return 'latest';
-}
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-
 const defaultConfig = {
   sources: [
     'README.md',
@@ -25,55 +20,10 @@ const defaultConfig = {
 interface InitResult {
   configCreated: boolean;
   taskCreated?: boolean;
-  packageUpdated?: boolean;
   alreadyInitialized?: boolean;
   rulesGenerated?: boolean;
   gitInitialized?: boolean;
   gitExists?: boolean;
-}
-
-async function updatePackageJson(cwd: string, testMode = false): Promise<boolean> {
-  const pkgPath = path.join(cwd, 'package.json');
-  
-  // Create package.json if it doesn't exist
-  if (!existsSync(pkgPath)) {
-    if (testMode) {
-      // Create a minimal package.json for testing
-      const minimalPkg = {
-        name: path.basename(cwd),
-        version: '1.0.0',
-        scripts: {},
-        devDependencies: {}
-      };
-      writeFileSync(pkgPath, JSON.stringify(minimalPkg, null, 2));
-    } else {
-      execSync('npm init -y', { stdio: 'ignore', cwd });
-    }
-  }
-
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-  
-  // Add scripts if they don't exist
-  pkg.scripts = pkg.scripts || {};
-
-  // Add rules generation script
-  if (!pkg.scripts.rules) {
-    pkg.scripts.rules = 'airul generate';
-  }
-
-  // Add dev dependencies
-  pkg.devDependencies = pkg.devDependencies || {};
-  pkg.devDependencies.airul = testMode ? 'latest' : await getLatestVersion();
-
-  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
-
-  // Install airul as dev dependency
-  console.log('Installing airul as dev dependency...');
-  if (process.env.NODE_ENV !== 'test') {
-    execSync('npm install --save-dev airul@latest', { stdio: 'inherit', cwd });
-  }
-  
-  return true;
 }
 
 export async function initProject(cwd: string, task?: string, testMode = false): Promise<InitResult> {
@@ -149,9 +99,6 @@ ${task}
     taskCreated = true;
   }
 
-  // Update package.json and install dependencies
-  const packageUpdated = await updatePackageJson(cwd, testMode);
-
   // Generate initial rules if documentation exists
   let rulesGenerated = false;
   try {
@@ -167,7 +114,6 @@ ${task}
   return {
     configCreated: true,
     taskCreated,
-    packageUpdated,
     rulesGenerated,
     gitInitialized,
     gitExists
