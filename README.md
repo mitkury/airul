@@ -1,4 +1,4 @@
-# AIrul
+# Airul
 
 Generate rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs.
 

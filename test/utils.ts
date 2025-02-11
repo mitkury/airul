@@ -23,7 +23,7 @@ export async function cleanupTestOutputs() {
 }
 
 /**
- * Safely create test directory
+ * Safely create test directory and ensure it's empty
  * @param testDir Directory to create
  */
 export async function createTestDir(testDir: string) {
@@ -33,5 +33,15 @@ export async function createTestDir(testDir: string) {
     throw new Error('Refusing to create directory not marked as test outputs');
   }
 
+  // Remove existing directory if it exists
+  try {
+    await fs.rm(testDir, { recursive: true, force: true });
+  } catch (error: any) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  // Create directory and any necessary parent directories
   await fs.mkdir(testDir, { recursive: true });
 }

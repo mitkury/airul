@@ -3,11 +3,29 @@ import * as path from 'path';
 import { glob } from 'glob';
 import { GenerateOptions } from './types';
 
+async function expandAndDeduplicate(sources: string[]): Promise<string[]> {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const pattern of sources) {
+    const matches = await glob(pattern);
+    for (const file of matches) {
+      const normalized = path.normalize(file);
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        result.push(normalized);
+      }
+    }
+  }
+
+  return result;
+}
+
 export async function generateRules(options: GenerateOptions): Promise<void> {
   const { sources, output, template = {} } = options;
   
-  // Expand glob patterns and get all source files
-  const files = await glob(sources);
+  // Expand glob patterns and deduplicate while preserving order
+  const files = await expandAndDeduplicate(sources);
   
   // Read and format content from each file
   const contents = await Promise.all(

@@ -31,7 +31,22 @@ async function updatePackageJson(cwd: string, testMode = false): Promise<boolean
   
   // Create package.json if it doesn't exist
   if (!existsSync(pkgPath)) {
-    execSync('npm init -y', { stdio: 'inherit', cwd });
+    if (testMode) {
+      // Create a minimal package.json for testing
+      const minimalPkg = {
+        name: path.basename(cwd),
+        version: '1.0.0',
+        description: '',
+        main: 'index.js',
+        scripts: {},
+        keywords: [],
+        author: '',
+        license: 'ISC'
+      };
+      writeFileSync(pkgPath, JSON.stringify(minimalPkg, null, 2));
+    } else {
+      execSync('npm init -y', { stdio: 'inherit', cwd });
+    }
   }
 
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
