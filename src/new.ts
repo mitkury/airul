@@ -85,7 +85,9 @@ export const createNewProject = async (
 
       // Create docs/README.md from template
       const docsReadmeTemplate = await readFile(join(__dirname, '..', 'test', 'docs', 'test-docs-readme.md'), 'utf8');
-      await writeFile(join(projectPath, 'docs', 'README.md'), docsReadmeTemplate);
+      const docsDir = join(projectPath, 'docs');
+      await mkdir(docsDir, { recursive: true }); // Only create docs dir when we need to write a test file
+      await writeFile(join(docsDir, 'README.md'), docsReadmeTemplate);
     }
 
     // Open in editor if specified

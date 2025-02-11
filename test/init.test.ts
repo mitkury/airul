@@ -31,14 +31,28 @@ describe('init command', () => {
     
     // Verify result
     expect(result.configCreated).toBe(true);
-    expect(result.docsCreated).toBe(true);
     expect(result.alreadyInitialized).toBeFalsy();
+    expect(result.rulesGenerated).toBe(false); // No docs yet, so rules won't be generated
     
     // Verify config exists and is valid JSON
     const configPath = join(TEST_DIRS.INIT, '.airul.json');
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toBeTruthy();
     expect(config.sources).toContain('README.md');
+  });
+
+  it('should generate rules if documentation exists', async () => {
+    // Create some documentation first
+    await writeFile(join(TEST_DIRS.INIT, 'README.md'), '# Test Project\n\nThis is a test.');
+    
+    const result = await initProject(TEST_DIRS.INIT, undefined, true);
+    expect(result.rulesGenerated).toBe(true);
+    
+    // Verify rules files were created
+    const windsurfRules = await readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8');
+    const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
+    expect(windsurfRules).toContain('Test Project');
+    expect(cursorRules).toContain('Test Project');
   });
 
   it('should handle already initialized project', async () => {
@@ -50,7 +64,6 @@ describe('init command', () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true);
     expect(result.alreadyInitialized).toBe(true);
     expect(result.configCreated).toBe(false);
-    expect(result.docsCreated).toBe(false);
 
     // Original config should be preserved
     const config = JSON.parse(await readFile(configPath, 'utf8'));

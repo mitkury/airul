@@ -78,14 +78,20 @@ program
         console.log('- Added airul as dev dependency');
         console.log('- Added npm script: npm run rules');
       }
+      if (result.rulesGenerated) {
+        console.log('- Generated initial AI rules');
+      }
       
       console.log('\nNext steps:');
       if (result.taskCreated) {
         console.log('1. Open your project in an AI-powered IDE');
         console.log('2. The AI will see your task and help you complete it');
-      } else {
+      } else if (!result.rulesGenerated) {
         console.log('1. Add your documentation to README.md and docs/');
         console.log('2. Run `npm run rules` to generate rule files');
+      } else {
+        console.log('1. Add more documentation to README.md and docs/');
+        console.log('2. Run `npm run rules` to update rule files');
       }
     } catch (error: any) {
       console.error('Error:', error.message);
