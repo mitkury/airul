@@ -1,7 +1,8 @@
 {
   "sources": [
     "README.md",
-    "docs/*.md"
+    "docs/**/*.md",
+    "api-docs/**/*.md"
   ],
   "output": {
     "windsurf": true,

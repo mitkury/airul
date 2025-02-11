@@ -53,8 +53,25 @@ async function updatePackageJson(cwd: string, testMode = false): Promise<boolean
   
   // Add scripts if they don't exist
   pkg.scripts = pkg.scripts || {};
+
+  // Add rules generation script with description
   if (!pkg.scripts.rules) {
     pkg.scripts.rules = 'airul generate';
+  }
+
+  // Add a comment to explain what the rules script does
+  if (!pkg.scripts['rules:comment']) {
+    pkg.scripts['rules:comment'] = '# Generate AI rules from documentation';
+  }
+
+  // Add a pregenerate script to ensure config exists
+  if (!pkg.scripts.pregenerate) {
+    pkg.scripts.pregenerate = '[ -f .airulrc.json ] || airul init';
+  }
+
+  // Add a postinstall message to remind about the rules script
+  if (!pkg.scripts.postinstall) {
+    pkg.scripts.postinstall = 'echo "\nRun \'npm run rules\' to generate AI rules from your documentation"';
   }
 
   // Add dev dependencies

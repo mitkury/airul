@@ -1,6 +1,4 @@
-# Getting Started with AIrul
-
-AIrul helps you maintain consistent behavior in Cursor, Windsurf, and other AI-powered IDEs by generating rules from your project documentation.
+# Getting Started with Airul
 
 ## Quick Start
 

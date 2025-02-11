@@ -17,6 +17,7 @@ program
 
 program
   .command('init')
+  .aliases(['i', 'initialize'])
   .description('Initialize AIrul in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
   .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
   .action(async (task) => {
@@ -50,6 +51,7 @@ program
 
 program
   .command('generate')
+  .aliases(['gen', 'g'])
   .description('Generate AI rules by scanning your documentation files. Creates .windsurfrules and .cursorrules files that help AI tools understand your project.')
   .option('-c, --config <path>', 'Path to .airulrc.json config file. Default: .airulrc.json in current directory')
   .option('-f, --files <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')

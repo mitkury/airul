@@ -21,8 +21,13 @@ describe('initProject', () => {
     const pkgPath = path.join(TEST_DIRS.BASIC_INIT, 'package.json');
     const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
 
-    // Should have rules script
-    expect(pkg.scripts).toHaveProperty('rules', 'airul generate');
+    // Should have all required scripts
+    expect(pkg.scripts).toMatchObject({
+      'rules': 'airul generate',
+      'rules:comment': '# Generate AI rules from documentation',
+      'pregenerate': '[ -f .airulrc.json ] || airul init',
+      'postinstall': expect.stringContaining('npm run rules')
+    });
 
     // Should have airul as dev dependency
     expect(pkg.devDependencies).toHaveProperty('airul');
