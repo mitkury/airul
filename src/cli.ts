@@ -104,7 +104,7 @@ program
   .aliases(['gen', 'g'])
   .description('Generate AI rules by scanning your documentation files. Creates .windsurfrules and .cursorrules files that help AI tools understand your project.')
   .option('-c, --config <path>', 'Path to .airul.json config file. Default: .airul.json in current directory')
-  .option('-f, --files <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
+  .option('-s, --sources <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
   .option('--no-windsurf', 'Disable .windsurfrules output for Windsurf IDE')
   .option('--no-cursor', 'Disable .cursorrules output for Cursor IDE')
   .option('--custom-output <path>', 'Path for additional custom rules output file')
@@ -114,7 +114,7 @@ program
       
       const generateOptions: AirulConfig = {
         ...config,
-        sources: options.files || config.sources,
+        sources: options.sources || config.sources,
         output: {
           windsurf: options.windsurf ?? config.output.windsurf,
           cursor: options.cursor ?? config.output.cursor,
