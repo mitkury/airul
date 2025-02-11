@@ -69,7 +69,11 @@ program
       const result = await initProject(process.cwd(), task);
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
-      console.log('- Updated .gitignore');
+      if (result.gitInitialized) {
+        console.log('- Initialized git repository');
+      } else if (result.gitExists) {
+        console.log('- Using existing git repository');
+      }
       console.log('- Created docs directory');
       if (result.taskCreated) {
         console.log('- Created TODO-AI.md with your task');

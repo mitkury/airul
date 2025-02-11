@@ -28,6 +28,8 @@ interface InitResult {
   packageUpdated?: boolean;
   alreadyInitialized?: boolean;
   rulesGenerated?: boolean;
+  gitInitialized?: boolean;
+  gitExists?: boolean;
 }
 
 async function updatePackageJson(cwd: string, testMode = false): Promise<boolean> {
@@ -109,6 +111,29 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     }
   }
 
+  // Initialize git if not already initialized
+  const gitDir = path.join(cwd, '.git');
+  let gitInitialized = false;
+  let gitExists = false;
+  try {
+    await fs.access(gitDir);
+    gitExists = true;
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      if (!testMode) {
+        try {
+          execSync('git init', { stdio: 'inherit', cwd });
+          gitInitialized = true;
+        } catch (gitError) {
+          // Git command failed (e.g., git not installed) - continue without git
+          console.warn('Note: Git initialization skipped - git may not be installed');
+        }
+      } else {
+        gitInitialized = true;
+      }
+    }
+  }
+
   // Create config file
   await fs.writeFile(
     configPath,
@@ -162,6 +187,8 @@ ${task}
     configCreated: true,
     taskCreated,
     packageUpdated,
-    rulesGenerated
+    rulesGenerated,
+    gitInitialized,
+    gitExists
   };
 }
