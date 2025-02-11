@@ -1,6 +1,6 @@
-# Documentation
+# Project Documentation
 
-This directory contains project documentation.
+This is a test documentation file for the project.
 
 ## Contents
 

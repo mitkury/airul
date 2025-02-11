@@ -1,8 +1,6 @@
 # {projectName}
 
-## Description
-
-A project created with Airul.
+This is a test project created with Airul.
 
 ## Getting Started
 
@@ -11,15 +9,11 @@ A project created with Airul.
    npm install
    ```
 
-2. Generate AI rules:
+2. Run the project:
    ```bash
-   npm run rules
+   npm start
    ```
 
 ## Documentation
 
-See the `docs/` directory for more information.
-
-## License
-
-ISC 
+See the `docs/`

@@ -4,8 +4,14 @@ import { dirname } from 'path';
 /**
  * Create a test directory and any parent directories
  */
-export async function createDir(dir: string, mode?: number): Promise<void> {
-  await mkdir(dir, { recursive: true, mode });
+export async function createDir(dir: string): Promise<void> {
+  try {
+    await mkdir(dir, { recursive: true, mode: 0o777 });
+  } catch (error: any) {
+    if (error.code !== 'EEXIST') {
+      throw error;
+    }
+  }
 }
 
 /**
