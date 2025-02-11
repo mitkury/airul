@@ -1,6 +1,6 @@
 {
   "name": "airul",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "CLI tool for generating AI rules from project documentation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
