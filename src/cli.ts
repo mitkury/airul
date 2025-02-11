@@ -17,7 +17,7 @@ async function checkAndSelfUpdate(verbose = false): Promise<boolean> {
     
     if (latestVersion !== version) {
       if (verbose) {
-        console.log('📦 Updating AIrul...');
+        console.log('📦 Updating Airul...');
         console.log(`Current version: ${version}`);
         console.log(`Latest version:  ${latestVersion}`);
       }
@@ -28,7 +28,7 @@ async function checkAndSelfUpdate(verbose = false): Promise<boolean> {
       }
       return true;
     } else if (verbose) {
-      console.log('✨ AIrul is already at the latest version');
+      console.log('✨ Airul is already at the latest version');
     }
     return false;
   } catch (error) {

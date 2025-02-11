@@ -58,7 +58,7 @@ Create `.airulrc.json` in your project root:
 }
 ```
 
-Note: AIrul works with any text files, not just markdown. You can include `.txt`, `.md`, or any other text files in your sources.
+Note: Airul works with any text files, not just markdown. You can include `.txt`, `.md`, or any other text files in your sources.
 
 ## Best Practices
 
