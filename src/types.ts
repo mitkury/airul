@@ -1,4 +1,4 @@
-export interface AiruleConfig {
+export interface AirulConfig {
   sources: string[];
   output: {
     windsurf: boolean;
@@ -13,4 +13,4 @@ export interface AiruleConfig {
   ignore?: string[];
 }
 
-export interface GenerateOptions extends AiruleConfig {}
+export interface GenerateOptions extends AirulConfig {}

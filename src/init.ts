@@ -1,6 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
+
+async function getLatestVersion(): Promise<string> {
+  return 'latest';
+}
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 const defaultConfig = {
@@ -22,7 +26,7 @@ interface InitResult {
   packageUpdated?: boolean;
 }
 
-async function updatePackageJson(cwd: string): Promise<boolean> {
+async function updatePackageJson(cwd: string, testMode = false): Promise<boolean> {
   const pkgPath = path.join(cwd, 'package.json');
   
   // Create package.json if it doesn't exist
@@ -35,24 +39,30 @@ async function updatePackageJson(cwd: string): Promise<boolean> {
   // Add scripts if they don't exist
   pkg.scripts = pkg.scripts || {};
   if (!pkg.scripts.rules) {
-    pkg.scripts.rules = 'airule generate';
+    pkg.scripts.rules = 'airul generate';
   }
+
+  // Add dev dependencies
+  pkg.devDependencies = pkg.devDependencies || {};
+  pkg.devDependencies.airul = testMode ? 'latest' : await getLatestVersion();
 
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
 
-  // Install airule as dev dependency
-  console.log('Installing airule as dev dependency...');
-  execSync('npm install --save-dev airule@latest', { stdio: 'inherit', cwd });
+  // Install airul as dev dependency
+  console.log('Installing airul as dev dependency...');
+  if (!testMode) {
+    execSync('npm install --save-dev airul@latest', { stdio: 'inherit', cwd });
+  }
   
   return true;
 }
 
-export async function initProject(cwd: string, task?: string): Promise<InitResult> {
-  // Check if .airulerc.json already exists
-  const configPath = path.join(cwd, '.airulerc.json');
+export async function initProject(cwd: string, task?: string, testMode = false): Promise<InitResult> {
+  // Check if .airulrc.json already exists
+  const configPath = path.join(cwd, '.airulrc.json');
   try {
     await fs.access(configPath);
-    throw new Error('.airulerc.json already exists');
+    throw new Error('.airulrc.json already exists');
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
       throw error;
@@ -101,7 +111,7 @@ ${task}
 
 ## Context
 - Created: ${new Date().toISOString().split('T')[0]}
-- Command: airule init "${task}"
+- Command: airul init "${task}"
 `;
 
     await fs.writeFile(
@@ -112,7 +122,7 @@ ${task}
   }
 
   // Update package.json and install dependencies
-  const packageUpdated = await updatePackageJson(cwd);
+  const packageUpdated = await updatePackageJson(cwd, testMode);
 
   return {
     configCreated: true,

@@ -17,7 +17,7 @@ describe('CLI', () => {
 
   it('should display help with all commands', () => {
     const output = execSync(`node ${cliPath} --help`).toString();
-    expect(output).toContain('Usage: airule [options] [command]');
+    expect(output).toContain('Usage: airul [options] [command]');
     expect(output).toContain('init [task]');
     expect(output).toContain('generate [options]');
   });

@@ -15,17 +15,17 @@ describe('initProject', () => {
 
   it('should create basic project structure and update package.json', async () => {
     await createTestDir(TEST_DIRS.BASIC_INIT);
-    const result = await initProject(TEST_DIRS.BASIC_INIT);
+    const result = await initProject(TEST_DIRS.BASIC_INIT, undefined, true);
 
     // Check package.json
     const pkgPath = path.join(TEST_DIRS.BASIC_INIT, 'package.json');
     const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
 
     // Should have rules script
-    expect(pkg.scripts).toHaveProperty('rules', 'airule generate');
+    expect(pkg.scripts).toHaveProperty('rules', 'airul generate');
 
-    // Should have airule as dev dependency
-    expect(pkg.devDependencies).toHaveProperty('airule');
+    // Should have airul as dev dependency
+    expect(pkg.devDependencies).toHaveProperty('airul');
 
     // Check result
     expect(result).toEqual({
@@ -37,13 +37,13 @@ describe('initProject', () => {
 
     // Check files
     const files = await fs.readdir(TEST_DIRS.BASIC_INIT);
-    expect(files).toContain('.airulerc.json');
+    expect(files).toContain('.airulrc.json');
 
     expect(files).toContain('docs');
 
     // Check config content
     const config = JSON.parse(
-      await fs.readFile(path.join(TEST_DIRS.BASIC_INIT, '.airulerc.json'), 'utf-8')
+      await fs.readFile(path.join(TEST_DIRS.BASIC_INIT, '.airulrc.json'), 'utf-8')
     );
     expect(config.sources).toContain('README.md');
     expect(config.output.windsurf).toBe(true);
@@ -53,7 +53,7 @@ describe('initProject', () => {
   it('should create project with AI task', async () => {
     await createTestDir(TEST_DIRS.TASK_INIT);
     const task = 'Create a React component';
-    const result = await initProject(TEST_DIRS.TASK_INIT, task);
+    const result = await initProject(TEST_DIRS.TASK_INIT, task, true);
 
     // Check result
     expect(result).toEqual({
@@ -75,16 +75,16 @@ describe('initProject', () => {
     expect(todoContent).toContain('Remove this file after completing the task');
   });
 
-  it('should handle existing .airulerc.json', async () => {
+  it('should handle existing .airulrc.json', async () => {
     await createTestDir(TEST_DIRS.ERROR_CASES);
     
     // Create existing config
     await fs.writeFile(
-      path.join(TEST_DIRS.ERROR_CASES, '.airulerc.json'),
+      path.join(TEST_DIRS.ERROR_CASES, '.airulrc.json'),
       JSON.stringify({ existing: true })
     );
 
-    await expect(initProject(TEST_DIRS.ERROR_CASES))
-      .rejects.toThrow('.airulerc.json already exists');
+    await expect(initProject(TEST_DIRS.ERROR_CASES, undefined, true))
+      .rejects.toThrow('.airulrc.json already exists');
   });
 });

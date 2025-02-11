@@ -1,9 +1,9 @@
 import { cosmiconfig } from 'cosmiconfig';
-import { AiruleConfig } from './types';
+import { AirulConfig } from './types';
 
-const MODULE_NAME = 'airule';
+const MODULE_NAME = 'airul';
 
-const defaultConfig: AiruleConfig = {
+const defaultConfig: AirulConfig = {
   sources: ['README.md', 'docs/*.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md'],
   output: {
     windsurf: true,
@@ -11,7 +11,7 @@ const defaultConfig: AiruleConfig = {
   }
 };
 
-export async function loadConfig(configPath?: string): Promise<AiruleConfig> {
+export async function loadConfig(configPath?: string): Promise<AirulConfig> {
   const explorer = cosmiconfig(MODULE_NAME);
   
   try {

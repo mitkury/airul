@@ -1,11 +1,11 @@
 {
-  "name": "airule",
+  "name": "airul",
   "version": "0.1.4",
   "description": "CLI tool for generating AI rules from project documentation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "airule": "./dist/cli.js"
+    "airul": "./dist/cli.js"
   },
   "scripts": {
     "clean": "rm -rf dist",

@@ -1,27 +1,27 @@
-# Getting Started with AIRule
+# Getting Started with AIrul
 
-AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-powered IDEs by generating rules from your project documentation.
+AIrul helps you maintain consistent behavior in Cursor, Windsurf, and other AI-powered IDEs by generating rules from your project documentation.
 
 ## Quick Start
 
 1. Install the package globally (recommended for initialization):
    ```bash
-   npm install -g airule
+   npm install -g airul
    ```
 
 2. Initialize in your project:
    ```bash
    # Basic initialization
-   airule init
+   airul init
 
    # Or initialize with a task for AI
-   airule init "Create a React component"
+   airul init "Create a React component"
    ```
 
    Basic initialization will:
-   - Create `.airulerc.json` with default configuration
+   - Create `.airulrc.json` with default configuration
    - Create a `docs` directory if it doesn't exist
-   - Add airule as a dev dependency to your project
+   - Add airul as a dev dependency to your project
    - Add an npm script: `npm run rules`
 
    Note: You may want to add `.windsurfrules` and `.cursorrules` to your `.gitignore` if you don't want to commit these files.
@@ -37,7 +37,7 @@ AIRule helps you maintain consistent behavior in Cursor, Windsurf, and other AI-
    npm run rules
 
    # Or using global installation
-   airule generate
+   airul generate
    ```
 
 This will:
@@ -47,7 +47,7 @@ This will:
 
 ## Configuration
 
-Create `.airulerc.json` in your project root:
+Create `.airulrc.json` in your project root:
 
 ```json
 {
@@ -60,7 +60,7 @@ Create `.airulerc.json` in your project root:
 }
 ```
 
-Note: AIRule works with any text files, not just markdown. You can include `.txt`, `.md`, or any other text files in your sources.
+Note: AIrul works with any text files, not just markdown. You can include `.txt`, `.md`, or any other text files in your sources.
 
 ## Best Practices
 
