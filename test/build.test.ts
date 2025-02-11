@@ -36,8 +36,8 @@ describe('built package', () => {
     const cliPath = join(rootDir, 'dist', 'cli.js');
     execSync(`node ${cliPath} init`, { stdio: 'inherit' });
 
-    // Verify .airulrc.json was created
-    const configPath = join(TEST_DIRS.INIT, '.airulrc.json');
+    // Verify .airul.json was created
+    const configPath = join(TEST_DIRS.INIT, '.airul.json');
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config.sources).toContain('README.md');
   });
@@ -51,7 +51,7 @@ describe('built package', () => {
     execSync(`node ${cliPath} new ${projectName} "Create a test project"`, { stdio: 'inherit' });
 
     // Verify project was created
-    const configPath = join(projectPath, '.airulrc.json');
+    const configPath = join(projectPath, '.airul.json');
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config.sources).toContain('README.md');
   });

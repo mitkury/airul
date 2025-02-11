@@ -68,7 +68,7 @@ async function updatePackageJson(cwd: string, testMode = false): Promise<boolean
 
   // Add a pregenerate script to ensure config exists
   if (!pkg.scripts.pregenerate) {
-    pkg.scripts.pregenerate = '[ -f .airulrc.json ] || airul init';
+    pkg.scripts.pregenerate = '[ -f .airul.json ] || airul init';
   }
 
   // Add a postinstall message to remind about the rules script
@@ -92,8 +92,8 @@ async function updatePackageJson(cwd: string, testMode = false): Promise<boolean
 }
 
 export async function initProject(cwd: string, task?: string, testMode = false): Promise<InitResult> {
-  // Check if .airulrc.json already exists
-  const configPath = path.join(cwd, '.airulrc.json');
+  // Check if .airul.json already exists
+  const configPath = path.join(cwd, '.airul.json');
   try {
     await fs.access(configPath);
     // Project is already initialized

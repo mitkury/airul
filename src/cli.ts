@@ -68,7 +68,7 @@ program
     try {
       const result = await initProject(process.cwd(), task);
       console.log('✨ Airul initialized successfully!');
-      console.log('- Created .airulrc.json with default configuration');
+      console.log('- Created .airul.json with default configuration');
       console.log('- Updated .gitignore');
       console.log('- Created docs directory');
       if (result.taskCreated) {
@@ -97,7 +97,7 @@ program
   .command('generate')
   .aliases(['gen', 'g'])
   .description('Generate AI rules by scanning your documentation files. Creates .windsurfrules and .cursorrules files that help AI tools understand your project.')
-  .option('-c, --config <path>', 'Path to .airulrc.json config file. Default: .airulrc.json in current directory')
+  .option('-c, --config <path>', 'Path to .airul.json config file. Default: .airul.json in current directory')
   .option('-f, --files <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
   .option('--no-windsurf', 'Disable .windsurfrules output for Windsurf IDE')
   .option('--no-cursor', 'Disable .cursorrules output for Cursor IDE')

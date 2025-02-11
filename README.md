@@ -31,7 +31,7 @@ npm run rules
 
 ## Example
 
-Create `.airulrc.json`:
+Create `.airul.json`:
 ```json
 {
   "sources": ["README.md", "docs/*.md", "*.txt"],

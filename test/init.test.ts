@@ -26,7 +26,7 @@ describe('init command', () => {
     // Removed cleanup to preserve test outputs
   });
 
-  it('should create .airulrc.json in new project', async () => {
+  it('should create .airul.json in new project', async () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true);
     
     // Verify result
@@ -35,15 +35,15 @@ describe('init command', () => {
     expect(result.alreadyInitialized).toBeFalsy();
     
     // Verify config exists and is valid JSON
-    const configPath = join(TEST_DIRS.INIT, '.airulrc.json');
+    const configPath = join(TEST_DIRS.INIT, '.airul.json');
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toBeTruthy();
     expect(config.sources).toContain('README.md');
   });
 
   it('should handle already initialized project', async () => {
-    // Create existing .airulrc.json
-    const configPath = join(TEST_DIRS.INIT, '.airulrc.json');
+    // Create existing .airul.json
+    const configPath = join(TEST_DIRS.INIT, '.airul.json');
     await writeFile(configPath, '{"existing": true}');
 
     // Should not throw, just inform it's already initialized

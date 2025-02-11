@@ -17,7 +17,7 @@
    ```
 
    Basic initialization will:
-   - Create `.airulrc.json` with default configuration
+   - Create `.airul.json` with default configuration
    - Create a `docs` directory if it doesn't exist
    - Add airul as a dev dependency to your project
    - Add an npm script: `npm run rules`
@@ -45,7 +45,7 @@ This will:
 
 ## Configuration
 
-Create `.airulrc.json` in your project root:
+Create `.airul.json` in your project root:
 
 ```json
 {

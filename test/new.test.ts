@@ -33,8 +33,8 @@ describe('new command', () => {
     // Verify project directory exists
     const projectDir = join(TEST_DIRS.INIT, projectName);
     
-    // Verify .airulrc.json exists and is valid JSON
-    const configPath = join(projectDir, '.airulrc.json');
+    // Verify .airul.json exists and is valid JSON
+    const configPath = join(projectDir, '.airul.json');
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toBeTruthy();
     expect(config.sources).toContain('README.md');
