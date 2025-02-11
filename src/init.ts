@@ -2,6 +2,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { join } from 'path';
+import { generateRules } from './generator';
 
 async function getLatestVersion(): Promise<string> {
   return 'latest';
@@ -16,16 +17,17 @@ const defaultConfig = {
   ],
   output: {
     windsurf: true,
-    cursor: true
+    cursor: true,
+    customPath: undefined
   }
 };
 
 interface InitResult {
   configCreated: boolean;
-  docsCreated: boolean;
   taskCreated?: boolean;
   packageUpdated?: boolean;
   alreadyInitialized?: boolean;
+  rulesGenerated?: boolean;
 }
 
 async function updatePackageJson(cwd: string, testMode = false): Promise<boolean> {
@@ -99,7 +101,6 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     // Project is already initialized
     return {
       configCreated: false,
-      docsCreated: false,
       alreadyInitialized: true
     };
   } catch (error: any) {
@@ -113,23 +114,6 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     configPath,
     JSON.stringify(defaultConfig, null, 2)
   );
-
-  // Create docs directory if it doesn't exist
-  const docsPath = join(cwd, 'docs');
-  try {
-    await fs.access(docsPath);
-  } catch {
-    await fs.mkdir(docsPath, { recursive: true });
-  }
-
-  // Check for api-docs directory
-  const apiDocsPath = path.join(cwd, 'api-docs');
-  
-  try {
-    await fs.access(apiDocsPath);
-  } catch {
-    // Don't create api-docs by default, only if specifically needed
-  }
 
   // Create TODO-AI.md if task is provided
   let taskCreated = false;
@@ -162,10 +146,22 @@ ${task}
   // Update package.json and install dependencies
   const packageUpdated = await updatePackageJson(cwd, testMode);
 
+  // Generate initial rules if documentation exists
+  let rulesGenerated = false;
+  try {
+    rulesGenerated = await generateRules({
+      ...defaultConfig,
+      baseDir: cwd
+    });
+  } catch (error) {
+    // Don't fail initialization if rules generation fails
+    console.warn('Note: Initial rules generation skipped - add documentation first');
+  }
+
   return {
     configCreated: true,
-    docsCreated: true,
     taskCreated,
-    packageUpdated
+    packageUpdated,
+    rulesGenerated
   };
 }

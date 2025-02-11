@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
 import { GenerateOptions } from './types';
+import { dirname } from 'path';
 
 async function expandAndDeduplicate(sources: string[]): Promise<string[]> {
   const seen = new Set<string>();
@@ -31,7 +32,7 @@ async function expandAndDeduplicate(sources: string[]): Promise<string[]> {
   return result;
 }
 
-export async function generateRules(options: GenerateOptions): Promise<void> {
+export async function generateRules(options: GenerateOptions): Promise<boolean> {
   const { sources, output, template = {} } = options;
   
   // Use specified base directory or current working directory
@@ -45,7 +46,7 @@ export async function generateRules(options: GenerateOptions): Promise<void> {
 
   if (files.length === 0) {
     console.log('No documentation files found');
-    return;
+    return false;
   }
   
   // Read and format content from each file
@@ -72,7 +73,7 @@ export async function generateRules(options: GenerateOptions): Promise<void> {
 
   if (validContents.length === 0) {
     console.warn('Warning: No valid documentation content found');
-    return;
+    return false;
   }
 
   // Join contents with separator
@@ -95,4 +96,5 @@ export async function generateRules(options: GenerateOptions): Promise<void> {
   }
 
   await Promise.all(writePromises);
+  return true;
 }
