@@ -1,47 +1,30 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { TEST_BASE_DIR } from './constants';
+import { mkdir, rm } from 'fs/promises';
+import { dirname } from 'path';
 
 /**
- * Safely clean up test directories
- * ONLY deletes contents within __test_outputs__ directory
+ * Create a test directory and any parent directories
  */
-export async function cleanupTestOutputs() {
-  try {
-    // Extra safety check: ensure we're only deleting within test outputs
-    const normalizedPath = path.normalize(TEST_BASE_DIR);
-    if (!normalizedPath.includes('__test_outputs__')) {
-      throw new Error('Refusing to delete directory not marked as test outputs');
-    }
+export async function createDir(dir: string, mode?: number): Promise<void> {
+  await mkdir(dir, { recursive: true, mode });
+}
 
-    await fs.rm(TEST_BASE_DIR, { recursive: true, force: true });
+/**
+ * Remove a directory and all its contents
+ */
+export async function removeDir(dir: string): Promise<void> {
+  try {
+    await rm(dir, { recursive: true, force: true });
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
-      throw error;
+      console.warn(`Warning: Could not remove ${dir}: ${error.message}`);
     }
   }
 }
 
 /**
- * Safely create test directory and ensure it's empty
- * @param testDir Directory to create
+ * Clean up test output directory before/after tests
  */
-export async function createTestDir(testDir: string) {
-  // Extra safety check: ensure we're only creating within test outputs
-  const normalizedPath = path.normalize(testDir);
-  if (!normalizedPath.includes('__test_outputs__')) {
-    throw new Error('Refusing to create directory not marked as test outputs');
-  }
-
-  // Remove existing directory if it exists
-  try {
-    await fs.rm(testDir, { recursive: true, force: true });
-  } catch (error: any) {
-    if (error.code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  // Create directory and any necessary parent directories
-  await fs.mkdir(testDir, { recursive: true });
+export async function cleanupTestDir(dir: string): Promise<void> {
+  await removeDir(dir);
+  await createDir(dir);
 }

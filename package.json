@@ -10,7 +10,9 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "test": "jest",
+    "test": "NODE_ENV=test jest",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage",
     "test:cleanup": "rm -rf test/__test_outputs__",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
@@ -41,6 +43,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "airul": "^0.1.6",
+    "cross-env": "^7.0.3",
     "eslint": "^8.0.0",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
@@ -50,5 +53,12 @@
     "commander": "^11.0.0",
     "cosmiconfig": "^9.0.0",
     "glob": "^10.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.ts"
+    ]
   }
 }

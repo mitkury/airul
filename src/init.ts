@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { join } from 'path';
 
 async function getLatestVersion(): Promise<string> {
   return 'latest';
@@ -24,6 +25,7 @@ interface InitResult {
   docsCreated: boolean;
   taskCreated?: boolean;
   packageUpdated?: boolean;
+  alreadyInitialized?: boolean;
 }
 
 async function updatePackageJson(cwd: string, testMode = false): Promise<boolean> {
@@ -82,7 +84,7 @@ async function updatePackageJson(cwd: string, testMode = false): Promise<boolean
 
   // Install airul as dev dependency
   console.log('Installing airul as dev dependency...');
-  if (!testMode) {
+  if (process.env.NODE_ENV !== 'test') {
     execSync('npm install --save-dev airul@latest', { stdio: 'inherit', cwd });
   }
   
@@ -94,7 +96,12 @@ export async function initProject(cwd: string, task?: string, testMode = false):
   const configPath = path.join(cwd, '.airulrc.json');
   try {
     await fs.access(configPath);
-    throw new Error('.airulrc.json already exists');
+    // Project is already initialized
+    return {
+      configCreated: false,
+      docsCreated: false,
+      alreadyInitialized: true
+    };
   } catch (error: any) {
     if (error.code !== 'ENOENT') {
       throw error;
@@ -107,18 +114,17 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     JSON.stringify(defaultConfig, null, 2)
   );
 
-
-
-  // Check for docs directories
-  const docsPath = path.join(cwd, 'docs');
-  const apiDocsPath = path.join(cwd, 'api-docs');
-  
+  // Create docs directory if it doesn't exist
+  const docsPath = join(cwd, 'docs');
   try {
     await fs.access(docsPath);
   } catch {
-    await fs.mkdir(docsPath);
+    await fs.mkdir(docsPath, { recursive: true });
   }
 
+  // Check for api-docs directory
+  const apiDocsPath = path.join(cwd, 'api-docs');
+  
   try {
     await fs.access(apiDocsPath);
   } catch {

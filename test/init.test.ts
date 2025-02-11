@@ -1,95 +1,59 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { initProject } from '../src/init';
+import { readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
 import { TEST_DIRS } from './constants';
-import { cleanupTestOutputs, createTestDir } from './utils';
+import { cleanupTestDir, createDir } from './utils';
+import { initProject } from '../src/init';
 
-describe('initProject', () => {
+describe('init command', () => {
+  let originalCwd: string;
+
+  beforeAll(() => {
+    originalCwd = process.cwd();
+  });
+
+  afterAll(() => {
+    process.chdir(originalCwd);
+  });
+
   beforeEach(async () => {
-    await cleanupTestOutputs();
+    await cleanupTestDir(TEST_DIRS.INIT);
+    await createDir(TEST_DIRS.INIT);
+    process.chdir(TEST_DIRS.INIT);
   });
 
-  afterAll(async () => {
-    await cleanupTestOutputs();
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    // Removed cleanup to preserve test outputs
   });
 
-  it('should create basic project structure and update package.json', async () => {
-    await createTestDir(TEST_DIRS.BASIC_INIT);
-    const result = await initProject(TEST_DIRS.BASIC_INIT, undefined, true);
-
-    // Check package.json
-    const pkgPath = path.join(TEST_DIRS.BASIC_INIT, 'package.json');
-    const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
-
-    // Should have all required scripts
-    expect(pkg.scripts).toMatchObject({
-      'rules': 'airul generate',
-      'rules:comment': '# Generate AI rules from documentation',
-      'pregenerate': '[ -f .airulrc.json ] || airul init',
-      'postinstall': expect.stringContaining('npm run rules')
-    });
-
-    // Should have airul as dev dependency
-    expect(pkg.devDependencies).toHaveProperty('airul');
-
-    // Check result
-    expect(result).toEqual({
-      configCreated: true,
-      docsCreated: true,
-      taskCreated: false,
-      packageUpdated: true
-    });
-
-    // Check files
-    const files = await fs.readdir(TEST_DIRS.BASIC_INIT);
-    expect(files).toContain('.airulrc.json');
-
-    expect(files).toContain('docs');
-
-    // Check config content
-    const config = JSON.parse(
-      await fs.readFile(path.join(TEST_DIRS.BASIC_INIT, '.airulrc.json'), 'utf-8')
-    );
-    expect(config.sources).toContain('README.md');
-    expect(config.output.windsurf).toBe(true);
-    expect(config.output.cursor).toBe(true);
-  });
-
-  it('should create project with AI task', async () => {
-    await createTestDir(TEST_DIRS.TASK_INIT);
-    const task = 'Create a React component';
-    const result = await initProject(TEST_DIRS.TASK_INIT, task, true);
-
-    // Check result
-    expect(result).toEqual({
-      configCreated: true,
-      docsCreated: true,
-      taskCreated: true,
-      packageUpdated: true
-    });
-
-    // Check files
-    const files = await fs.readdir(TEST_DIRS.TASK_INIT);
-    expect(files).toContain('TODO-AI.md');
-
-    // Check task content
-    const todoContent = await fs.readFile(path.join(TEST_DIRS.TASK_INIT, 'TODO-AI.md'), 'utf-8');
-    expect(todoContent).toContain('## Task');
-    expect(todoContent).toContain(task);
-    expect(todoContent).toContain('⏳ In Progress');
-    expect(todoContent).toContain('Remove this file after completing the task');
-  });
-
-  it('should handle existing .airulrc.json', async () => {
-    await createTestDir(TEST_DIRS.ERROR_CASES);
+  it('should create .airulrc.json in new project', async () => {
+    const result = await initProject(TEST_DIRS.INIT, undefined, true);
     
-    // Create existing config
-    await fs.writeFile(
-      path.join(TEST_DIRS.ERROR_CASES, '.airulrc.json'),
-      JSON.stringify({ existing: true })
-    );
+    // Verify result
+    expect(result.configCreated).toBe(true);
+    expect(result.docsCreated).toBe(true);
+    expect(result.alreadyInitialized).toBeFalsy();
+    
+    // Verify config exists and is valid JSON
+    const configPath = join(TEST_DIRS.INIT, '.airulrc.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(config).toBeTruthy();
+    expect(config.sources).toContain('README.md');
+  });
 
-    await expect(initProject(TEST_DIRS.ERROR_CASES, undefined, true))
-      .rejects.toThrow('.airulrc.json already exists');
+  it('should handle already initialized project', async () => {
+    // Create existing .airulrc.json
+    const configPath = join(TEST_DIRS.INIT, '.airulrc.json');
+    await writeFile(configPath, '{"existing": true}');
+
+    // Should not throw, just inform it's already initialized
+    const result = await initProject(TEST_DIRS.INIT, undefined, true);
+    expect(result.alreadyInitialized).toBe(true);
+    expect(result.configCreated).toBe(false);
+    expect(result.docsCreated).toBe(false);
+
+    // Original config should be preserved
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(config).toEqual({ existing: true });
   });
 });

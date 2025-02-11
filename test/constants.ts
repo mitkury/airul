@@ -1,11 +1,27 @@
-import * as path from 'path';
+import { join } from 'path';
 
-// Base test directory - NEVER modify anything outside this
-export const TEST_BASE_DIR = path.join(__dirname, '__test_outputs__');
+// Base test output directory
+const TEST_OUTPUT_DIR = join(__dirname, '__test_outputs__');
 
-// Test case directories
+// Test directories for different test suites
 export const TEST_DIRS = {
-  BASIC_INIT: path.join(TEST_BASE_DIR, 'basic-init-test'),
-  TASK_INIT: path.join(TEST_BASE_DIR, 'task-init-test'),
-  ERROR_CASES: path.join(TEST_BASE_DIR, 'error-cases-test')
+  BASIC: join(TEST_OUTPUT_DIR, 'basic'),
+  DOCS: join(TEST_OUTPUT_DIR, 'docs'),
+  INIT: join(TEST_OUTPUT_DIR, 'init')
+} as const;
+
+// Sample package.json content
+export const TEST_PKG = {
+  name: 'test-project',
+  version: '1.0.0',
+  description: 'Test project',
+  scripts: {},
+  dependencies: {},
+  devDependencies: {}
+} as const;
+
+// Sample test content
+export const TEST_CONTENT = {
+  BASIC_RULE: '# Test Rule\nThis is a test rule.',
+  EMPTY: ''
 } as const;

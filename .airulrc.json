@@ -1,8 +1,7 @@
 {
   "sources": [
     "README.md",
-    "docs/**/*.md",
-    "api-docs/**/*.md"
+    "docs/tldr-ai.md"
   ],
   "output": {
     "windsurf": true,

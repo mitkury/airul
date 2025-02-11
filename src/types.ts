@@ -1,8 +1,12 @@
 export interface AirulConfig {
+  /**
+   * Base directory for output files. Defaults to process.cwd()
+   */
+  baseDir?: string;
   sources: string[];
   output: {
-    windsurf: boolean;
-    cursor: boolean;
+    windsurf?: boolean;
+    cursor?: boolean;
     customPath?: string;
   };
   template?: {

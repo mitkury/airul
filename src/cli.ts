@@ -5,6 +5,7 @@ import { generateRules } from './index';
 import { loadConfig } from './config';
 import { AirulConfig } from './types';
 import { initProject } from './init';
+import { createNewProject } from './new';
 
 const { version } = require('../package.json');
 
@@ -76,6 +77,24 @@ program
       console.log('Successfully generated AI rules');
     } catch (error) {
       console.error('Error generating rules:', error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('new')
+  .aliases(['n'])
+  .description('Create a new project directory and initialize AIrul')
+  .argument('<directory>', 'Directory name for the new project')
+  .argument('<task>', 'Task description that will be used to generate AI-specific instructions')
+  .option('--cursor', 'Open project in Cursor')
+  .option('--vscode', 'Open project in Visual Studio Code')
+  .option('--windsurf', 'Open project in Windsurf')
+  .action(async (directory, task, options) => {
+    try {
+      await createNewProject(directory, task, options);
+    } catch (error: any) {
+      console.error('Error:', error.message);
       process.exit(1);
     }
   });

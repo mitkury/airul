@@ -14,21 +14,27 @@ const defaultConfig: AirulConfig = {
 export async function loadConfig(configPath?: string): Promise<AirulConfig> {
   const explorer = cosmiconfig(MODULE_NAME);
   
-  try {
-    const result = configPath 
-      ? await explorer.load(configPath)
-      : await explorer.search();
+  const result = configPath 
+    ? await explorer.load(configPath)
+    : await explorer.search();
 
-    if (!result) {
-      return defaultConfig;
-    }
-
-    return {
-      ...defaultConfig,
-      ...result.config
-    };
-  } catch (error) {
-    console.error('Error loading configuration:', error);
+  if (!result || !result.config) {
     return defaultConfig;
   }
+
+  const config = result.config;
+  
+  // Merge with defaults
+  return {
+    ...defaultConfig,
+    ...config,
+    output: {
+      ...defaultConfig.output,
+      ...(config.output || {})
+    },
+    template: {
+      ...defaultConfig.template,
+      ...(config.template || {})
+    }
+  };
 }
