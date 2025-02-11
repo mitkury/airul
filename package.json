@@ -16,7 +16,6 @@
     "test:cleanup": "rm -rf test/__test_outputs__",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
-    "version": "node scripts/update-cli-version.js && git add src/cli.ts",
     "rules": "airul generate"
   },
   "keywords": [

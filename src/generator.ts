@@ -4,19 +4,22 @@ import { glob } from 'glob';
 import { GenerateOptions } from './types';
 import { dirname } from 'path';
 
-async function expandAndDeduplicate(sources: string[]): Promise<string[]> {
+async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
   const seen = new Set<string>();
   const result: string[] = [];
 
   for (const pattern of sources) {
     try {
-      const matches = await glob(pattern);
+      const matches = await glob(pattern, { 
+        cwd: baseDir,
+        absolute: false
+      });
       for (const file of matches) {
         const normalized = path.normalize(file);
         if (!seen.has(normalized)) {
           // Check if file exists before adding
           try {
-            await fs.access(normalized);
+            await fs.access(path.join(baseDir, normalized));
             seen.add(normalized);
             result.push(normalized);
           } catch (error) {
@@ -42,7 +45,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   await fs.mkdir(baseDir, { recursive: true });
   
   // Expand glob patterns and deduplicate while preserving order
-  const files = await expandAndDeduplicate(sources);
+  const files = await expandAndDeduplicate(sources, baseDir);
 
   if (files.length === 0) {
     console.log('No documentation files found');
@@ -53,7 +56,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   const contents = await Promise.all(
     files.map(async (file) => {
       try {
-        const content = await fs.readFile(file, 'utf8');
+        const content = await fs.readFile(path.join(baseDir, file), 'utf8');
         const trimmed = content.trim();
         if (!trimmed) {
           console.warn(`Warning: File ${file} is empty`);

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { TEST_DIRS } from './constants';
 import { cleanupTestDir, createDir } from './utils';
 import { initProject } from '../src/init';
+import { generateRules } from '../src/generator';
 
 describe('init command', () => {
   let originalCwd: string;
@@ -42,11 +43,20 @@ describe('init command', () => {
   });
 
   it('should generate rules if documentation exists', async () => {
-    // Create some documentation first
+    // Initialize project first
+    const result = await initProject(TEST_DIRS.INIT, undefined, true);
+    expect(result.configCreated).toBe(true);
+    
+    // Then create documentation
     await writeFile(join(TEST_DIRS.INIT, 'README.md'), '# Test Project\n\nThis is a test.');
     
-    const result = await initProject(TEST_DIRS.INIT, undefined, true);
-    expect(result.rulesGenerated).toBe(true);
+    // Generate rules again
+    const result2 = await generateRules({
+      sources: ['README.md'],
+      output: { windsurf: true, cursor: true },
+      baseDir: TEST_DIRS.INIT
+    });
+    expect(result2).toBe(true);
     
     // Verify rules files were created
     const windsurfRules = await readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8');
