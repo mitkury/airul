@@ -1,6 +1,6 @@
 {
   "name": "airul",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "CLI tool for generating AI rules from project documentation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -63,6 +63,8 @@
     "globals": {
       "TEST_DIST": true
     },
-    "setupFiles": ["<rootDir>/test/setup.js"]
+    "setupFiles": [
+      "<rootDir>/test/setup.js"
+    ]
   }
 }
