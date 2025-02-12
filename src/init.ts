@@ -71,14 +71,15 @@ export async function initProject(cwd: string, task?: string, testMode = false):
   );
 
   // Create TODO-AI.md
-  const todoContent = task
-    ? `# AI Workspace
+  const activeTask = task || 'None';
+  const status = task ? '⏳ In Progress' : '🆕 Ready';
+  const todoContent = `# AI Workspace
 
 ## Active Task
-${task}
+${activeTask}
 
 ## Status
-⏳ In Progress
+${status}
 
 ## Instructions
 1. This file is yours (AI agent) for managing tasks in this project
@@ -87,24 +88,6 @@ ${task}
 
 ## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
-- Command for creating this file: \`airul init "${task}"\`
-`
-    : `# AI Workspace
-
-## Active Task
-None
-
-## Status
-🆕 Ready
-
-## Instructions
-1. This file is yours (AI agent) for managing tasks in this project
-2. Update task status as you make progress
-3. Remove completed tasks and add new ones as needed
-
-## Notes
-- Created: ${new Date().toISOString().split('T')[0]}
-- Command for creating this file: \`airul init\` or \`airul generate\`
 `;
 
   await fs.writeFile(
