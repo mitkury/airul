@@ -27,6 +27,11 @@ const isValidProjectName = (name: string): boolean => {
 };
 
 const openInEditor = async (projectPath: string, editor: string) => {
+  // Skip editor launch in test environment
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
   type EditorCommand = 'vscode' | 'code' | 'cursor' | 'windsurf' | 'ws';
 
   const commands: Record<EditorCommand, string[]> = {
@@ -52,11 +57,6 @@ const openInEditor = async (projectPath: string, editor: string) => {
     
     // Allow Node.js to exit even if the editor process is still running
     proc.unref();
-
-    // In test environment, don't actually launch editors
-    if (process.env.NODE_ENV === 'test') {
-      proc.kill();
-    }
   } catch (error) {
     console.error(`Failed to open in ${editor}. Make sure it's installed and available in PATH.`);
   }
