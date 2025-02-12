@@ -43,12 +43,12 @@ describe('init command', () => {
     // Verify TODO-AI.md exists and has correct content
     const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
     const todoContent = await readFile(todoPath, 'utf8');
-    expect(todoContent).toContain('# AI Task Instructions');
-    expect(todoContent).toContain('🆕 Ready for task');
+    expect(todoContent).toContain('# AI Workspace');
+    expect(todoContent).toContain('🆕 Ready');
 
     // Verify cursor rules were generated from TODO-AI.md
     const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
-    expect(cursorRules).toContain('AI Task Instructions');
+    expect(cursorRules).toContain('AI Workspace');
   });
 
   it('should generate rules if documentation exists', async () => {
