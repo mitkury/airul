@@ -1,8 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { join } from 'path';
-import { generate, generateRules } from './generator';
+import { generateRules } from './generator';
 
 const defaultConfig = {
   what: "Generate AI rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs",
@@ -71,7 +70,7 @@ export async function initProject(cwd: string, task?: string, testMode = false):
   );
 
   // Create TODO-AI.md
-  const todoContent = task 
+  const todoContent = task
     ? `# AI Workspace
 
 ## Active Task
@@ -87,7 +86,7 @@ ${task}
 
 ## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
-- Command: airul init "${task}"
+- Command for creating this file: \`airul init "${task}"\`
 `
     : `# AI Workspace
 
@@ -104,7 +103,7 @@ None
 
 ## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
-- Command for creating this file: `airul init` or `airul generate`
+- Command for creating this file: \`airul init\` or \`airul generate\`
 `;
 
   await fs.writeFile(
