@@ -66,9 +66,16 @@ program
   .aliases(['i', 'initialize'])
   .description('Initialize Airul in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
   .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
-  .action(async (task) => {
+  .option('--cursor', 'Enable Cursor editor output (default: enabled)')
+  .option('--windsurf', 'Enable Windsurf editor output (default: disabled)')
+  .option('--vscode', 'Enable VSCode editor output (default: disabled)')
+  .action(async (task, options) => {
     try {
-      const result = await initProject(process.cwd(), task);
+      const result = await initProject(process.cwd(), task, process.env.NODE_ENV === 'test', {
+        cursor: options.cursor,
+        windsurf: options.windsurf,
+        vscode: options.vscode
+      });
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
       if (result.gitInitialized) {
@@ -151,12 +158,16 @@ program
   .description('Create a new project directory and initialize Airul')
   .argument('<directory>', 'Directory name for the new project')
   .argument('<task>', 'Task description that will be used to generate AI-specific instructions')
-  .option('--cursor', 'Open project in Cursor')
-  .option('--vscode', 'Open project in Visual Studio Code')
-  .option('--windsurf', 'Open project in Windsurf')
+  .option('--cursor', 'Enable and open in Cursor')
+  .option('--windsurf', 'Enable and open in Windsurf')
+  .option('--vscode', 'Enable and open in VSCode')
   .action(async (directory, task, options) => {
     try {
-      await createNewProject(directory, task, options);
+      await createNewProject(directory, task, {
+        cursor: options.cursor,
+        windsurf: options.windsurf,
+        vscode: options.vscode
+      });
     } catch (error: any) {
       console.error('Error:', error.message);
       process.exit(1);

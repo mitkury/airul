@@ -12,9 +12,16 @@ const defaultConfig = {
   ],
   output: {
     cursor: true,
-    windsurf: false
+    windsurf: false,
+    vscode: false
   }
 };
+
+interface EditorOptions {
+  cursor?: boolean;
+  windsurf?: boolean;
+  vscode?: boolean;
+}
 
 interface InitResult {
   configCreated: boolean;
@@ -25,7 +32,12 @@ interface InitResult {
   gitExists?: boolean;
 }
 
-export async function initProject(cwd: string, task?: string, testMode = false): Promise<InitResult> {
+export async function initProject(
+  cwd: string, 
+  task?: string, 
+  testMode = false,
+  editorOptions: EditorOptions = {}
+): Promise<InitResult> {
   // Check if .airul.json already exists
   const configPath = path.join(cwd, '.airul.json');
   try {
@@ -64,10 +76,20 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     }
   }
 
-  // Create config file
+  // Create config file with editor options
+  const config = {
+    ...defaultConfig,
+    output: {
+      ...defaultConfig.output,
+      cursor: editorOptions.cursor ?? defaultConfig.output.cursor,
+      windsurf: editorOptions.windsurf ?? defaultConfig.output.windsurf,
+      vscode: editorOptions.vscode ?? defaultConfig.output.vscode
+    }
+  };
+
   await fs.writeFile(
     configPath,
-    JSON.stringify(defaultConfig, null, 2)
+    JSON.stringify(config, null, 2)
   );
 
   // Create TODO-AI.md

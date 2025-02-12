@@ -69,7 +69,41 @@ describe('new command', () => {
     for (const editor of editors) {
       const fullName = `${projectName}-${editor}`;
       await createNewProject(fullName, undefined, { [editor]: true });
+      
+      // Verify project was created
       await expect(access(fullName)).resolves.toBeUndefined();
+      
+      // Verify editor configuration in .airul.json
+      const configPath = join(fullName, '.airul.json');
+      const config = JSON.parse(await readFile(configPath, 'utf8'));
+      
+      // Check that only the specified editor is enabled
+      expect(config.output[editor]).toBe(true);
+      
+      // Check other editors maintain their defaults
+      const otherEditors = editors.filter(e => e !== editor);
+      for (const otherEditor of otherEditors) {
+        expect(config.output[otherEditor]).toBe(otherEditor === 'cursor');
+      }
     }
+  });
+
+  it('should enable multiple editors when specified', async () => {
+    const projectName = 'test-project-multi-editor';
+    await createNewProject(projectName, undefined, {
+      cursor: true,
+      windsurf: true,
+      vscode: true
+    });
+
+    // Verify project was created
+    await expect(access(projectName)).resolves.toBeUndefined();
+
+    // Verify all editors are enabled in config
+    const configPath = join(projectName, '.airul.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(config.output.cursor).toBe(true);
+    expect(config.output.windsurf).toBe(true);
+    expect(config.output.vscode).toBe(true);
   });
 });

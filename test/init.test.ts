@@ -37,8 +37,9 @@ describe('init command', () => {
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toBeTruthy();
     expect(config.sources).toContain('TODO-AI.md');
-    expect(config.output.cursor).toBe(true);
-    expect(config.output.windsurf).toBe(false);
+    expect(config.output.cursor).toBe(true); // Cursor enabled by default
+    expect(config.output.windsurf).toBe(false); // Windsurf disabled by default
+    expect(config.output.vscode).toBe(false); // VSCode disabled by default
 
     // Verify TODO-AI.md exists and has correct content
     const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
@@ -88,5 +89,22 @@ describe('init command', () => {
     // Original config should be preserved
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config).toEqual({ existing: true });
+  });
+
+  it('should respect editor flags during initialization', async () => {
+    const result = await initProject(TEST_DIRS.INIT, undefined, true, {
+      cursor: false,
+      windsurf: true,
+      vscode: true
+    });
+    
+    expect(result.configCreated).toBe(true);
+    
+    // Verify editor configuration
+    const configPath = join(TEST_DIRS.INIT, '.airul.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(config.output.cursor).toBe(false); // Cursor disabled by flag
+    expect(config.output.windsurf).toBe(true); // Windsurf enabled by flag
+    expect(config.output.vscode).toBe(true); // VSCode enabled by flag
   });
 });

@@ -4,9 +4,10 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import { initProject } from './init';
 
 interface NewProjectOptions {
+  // Editor configuration
   cursor?: boolean;
-  vscode?: boolean;
   windsurf?: boolean;
+  vscode?: boolean;
 }
 
 const isValidProjectName = (name: string): boolean => {
@@ -87,8 +88,12 @@ export const createNewProject = async (
     }
     console.log(`Created directory: ${projectName}`);
 
-    // Initialize airul in the new directory
-    await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test');
+    // Initialize airul in the new directory with editor options
+    await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test', {
+      cursor: options.cursor,
+      windsurf: options.windsurf,
+      vscode: options.vscode
+    });
 
     // Create README.md from template
     if (process.env.NODE_ENV === 'test') {
@@ -103,7 +108,7 @@ export const createNewProject = async (
       await writeFile(join(docsDir, 'README.md'), docsReadmeTemplate);
     }
 
-    // Open in editor if specified
+    // Open in editors if flags are set
     if (options.cursor) await openInEditor(projectPath, 'cursor');
     if (options.vscode) await openInEditor(projectPath, 'vscode');
     if (options.windsurf) await openInEditor(projectPath, 'windsurf');

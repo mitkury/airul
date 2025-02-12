@@ -29,7 +29,7 @@ describe('generator', () => {
     // Generate rules
     const result = await generateRules({
       baseDir: TEST_DIRS.BASIC,
-      sources: ['test-rules.md'],
+      sources: ['test-rules.md', 'TODO-AI.md'],
       output: { windsurf: true, cursor: true }
     });
 
