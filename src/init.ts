@@ -2,7 +2,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { join } from 'path';
-import { generateRules } from './generator';
+import { generate, generateRules } from './generator';
 
 const defaultConfig = {
   what: "Generate AI rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs",
@@ -83,12 +83,7 @@ ${task}
 ## Instructions
 1. This file is yours (AI agent) for managing tasks in this project
 2. Update task status as you make progress
-3. Break down complex tasks into subtasks
-4. Document important decisions and roadblocks
-5. Remove completed tasks and add new ones as needed
-
-## Task History
-- [ ] ${task} (started: ${new Date().toISOString().split('T')[0]})
+3. Remove completed tasks and add new ones as needed
 
 ## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
@@ -105,16 +100,11 @@ None
 ## Instructions
 1. This file is yours (AI agent) for managing tasks in this project
 2. Update task status as you make progress
-3. Break down complex tasks into subtasks
-4. Document important decisions and roadblocks
-5. Remove completed tasks and add new ones as needed
-
-## Task History
-No tasks yet
+3. Remove completed tasks and add new ones as needed
 
 ## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
-- Command: airul init
+- Command for creating this file: `airul init` or `airul generate`
 `;
 
   await fs.writeFile(
