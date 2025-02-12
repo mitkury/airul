@@ -9,14 +9,15 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc",
-    "test": "NODE_ENV=test jest",
-    "test:watch": "NODE_ENV=test jest --watch",
+    "build": "npm run clean && tsc && chmod +x dist/cli.js",
+    "test": "npm run build && NODE_ENV=test jest",
+    "test:watch": "npm run build && NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
     "test:cleanup": "rm -rf test/__test_outputs__",
     "lint": "eslint src/**/*.ts",
     "prepare": "npm run build",
-    "rules": "airul generate"
+    "rules": "airul generate",
+    "start": "ts-node src/cli.ts"
   },
   "keywords": [
     "ai",
@@ -58,6 +59,10 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/test/**/*.test.ts"
-    ]
+    ],
+    "globals": {
+      "TEST_DIST": true
+    },
+    "setupFiles": ["<rootDir>/test/setup.js"]
   }
 }

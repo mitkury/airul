@@ -3,6 +3,8 @@ import * as path from 'path';
 import { glob } from 'glob';
 import { GenerateOptions } from './types';
 import { dirname } from 'path';
+import { Config } from 'cosmiconfig';
+import console from 'console';
 
 async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
   const seen = new Set<string>();
@@ -33,6 +35,24 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
   }
 
   return result;
+}
+
+function findDocFiles(sources: string[]): string[] {
+  const files: string[] = [];
+  
+  for (const pattern of sources) {
+    const matches = glob.sync(pattern);
+    files.push(...matches);
+  }
+
+  if (files.length === 0) {
+    // Add more helpful error message
+    console.error('No documentation files found matching patterns:', sources);
+    console.error('Please check your .airul.json configuration and ensure files exist');
+    process.exit(1);
+  }
+
+  return files;
 }
 
 export async function generateRules(options: GenerateOptions): Promise<boolean> {
@@ -100,4 +120,23 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   await Promise.all(writePromises);
   return true;
+}
+
+export async function generate(config: Config) {
+  try {
+    const result = await generateRules({
+      sources: config.sources,
+      output: config.output,
+      baseDir: process.cwd()
+    });
+
+    if (result) {
+      console.log('Successfully generated AI rules');
+    } else {
+      console.warn('No rules were generated. Check your .airul.json output configuration.');
+    }
+  } catch (error) {
+    console.error('Error generating rules:', error);
+    process.exit(1);
+  }
 }

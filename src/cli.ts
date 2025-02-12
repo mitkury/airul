@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Remove any --inspect flags that might be getting added
+process.execArgv = process.execArgv.filter(arg => !arg.includes('--inspect'));
 
 import { Command } from 'commander';
 import { generateRules } from './index';

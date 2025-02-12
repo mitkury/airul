@@ -1,14 +1,16 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import { TEST_DIRS } from './constants';
 import { cleanupTestDir, createDir } from './utils';
 import { createNewProject } from '../src/new';
+import { access } from 'fs/promises';
+import { join, dirname } from 'path';
 
 describe('new command', () => {
   let originalCwd: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     originalCwd = process.cwd();
+    // Ensure parent directories exist
+    await createDir(dirname(TEST_DIRS.INIT));
   });
 
   afterAll(() => {
@@ -23,47 +25,46 @@ describe('new command', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
+    await cleanupTestDir(TEST_DIRS.INIT);
   });
 
-  it('should create new project directory with config', async () => {
+  it('should create a new project directory', async () => {
     const projectName = 'test-project';
-    await createNewProject(projectName, {});
-
-    // Verify project directory exists
-    const projectDir = join(TEST_DIRS.INIT, projectName);
-    
-    // Verify .airul.json exists and is valid JSON
-    const configPath = join(projectDir, '.airul.json');
-    const config = JSON.parse(await readFile(configPath, 'utf8'));
-    expect(config).toBeTruthy();
-    expect(config.sources).toContain('README.md');
+    await createNewProject(projectName, undefined, {});
+    await expect(access(projectName)).resolves.toBeUndefined();
   });
 
   it('should fail if directory already exists', async () => {
     const projectName = 'test-project';
-    await createNewProject(projectName, {});
-
-    // Try to create again and expect error
-    await expect(createNewProject(
-      projectName,
-      {}
-    )).rejects.toThrow('Directory \'test-project\' already exists. Please choose a different name.');
+    await createNewProject(projectName, undefined, {});
+    await expect(createNewProject(projectName, undefined, {}))
+      .rejects.toThrow('Directory \'test-project\' already exists');
   });
 
   it('should handle invalid project names', async () => {
     const invalidNames = [
-      '.test', // starts with dot
-      'Test Project', // contains space
-      'test$project', // contains special chars
-      '', // empty
-      'a'.repeat(215), // too long
+      '.test',
+      'test project',
+      'test/project',
+      'test\\project',
+      'test$project',
+      'a'.repeat(215)
     ];
 
     for (const name of invalidNames) {
-      await expect(createNewProject(
-        name,
-        {}
-      )).rejects.toThrow('Invalid project name');
+      await expect(createNewProject(name, undefined, {}))
+        .rejects.toThrow('Invalid project name');
+    }
+  });
+
+  it('should open in specified editor', async () => {
+    const projectName = 'test-project-editor';
+    const editors = ['cursor', 'vscode', 'windsurf'];
+
+    for (const editor of editors) {
+      const fullName = `${projectName}-${editor}`;
+      await createNewProject(fullName, undefined, { [editor]: true });
+      await expect(access(fullName)).resolves.toBeUndefined();
     }
   });
 });

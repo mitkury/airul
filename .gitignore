@@ -25,6 +25,9 @@ Thumbs.db
 
 # Test outputs
 test/__test_outputs__/
+test/project/
+test-project/
+test-pkg/
 
 .windsurfrules
 .cursorrules
