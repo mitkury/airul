@@ -73,6 +73,7 @@ export const createNewProject = async (
   }
 
   const projectPath = join(process.cwd(), projectName);
+  const defaultTask = "Learn from the user about their project, get the idea of what they want to make";
 
   try {
     // Check if directory exists
@@ -87,7 +88,7 @@ export const createNewProject = async (
     console.log(`Created directory: ${projectName}`);
 
     // Initialize airul in the new directory
-    await initProject(projectPath, task, process.env.NODE_ENV === 'test');
+    await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test');
 
     // Create README.md from template
     if (process.env.NODE_ENV === 'test') {
