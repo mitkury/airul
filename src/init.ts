@@ -40,63 +40,71 @@ export async function initProject(
 ): Promise<InitResult> {
   // Check if .airul.json already exists
   const configPath = path.join(cwd, '.airul.json');
+  let config;
+  let configCreated = false;
+  let gitInitialized = false;
+  let gitExists = false;
+  
   try {
     await fs.access(configPath);
-    // Project is already initialized
-    return {
-      configCreated: false,
-      alreadyInitialized: true
-    };
+    // Project is already initialized, load existing config
+    const configContent = await fs.readFile(configPath, 'utf8');
+    config = JSON.parse(configContent);
   } catch (error: any) {
-    if (error.code !== 'ENOENT') {
+    if (error.code === 'ENOENT') {
+      // Initialize git if not already initialized
+      const gitDir = path.join(cwd, '.git');
+      try {
+        await fs.access(gitDir);
+        gitExists = true;
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          if (!testMode) {
+            try {
+              execSync('git init', { stdio: 'inherit', cwd });
+              gitInitialized = true;
+            } catch (gitError) {
+              // Git command failed (e.g., git not installed) - continue without git
+              console.warn('Note: Git initialization skipped - git may not be installed');
+            }
+          } else {
+            gitInitialized = true;
+          }
+        }
+      }
+
+      // Create config file with editor options
+      config = {
+        ...defaultConfig,
+        output: {
+          ...defaultConfig.output,
+          cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
+          windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
+          vscode: editorOptions.vscode === undefined ? defaultConfig.output.vscode : Boolean(editorOptions.vscode)
+        }
+      };
+
+      await fs.writeFile(
+        configPath,
+        JSON.stringify(config, null, 2)
+      );
+      configCreated = true;
+    } else {
       throw error;
     }
   }
 
-  // Initialize git if not already initialized
-  const gitDir = path.join(cwd, '.git');
-  let gitInitialized = false;
-  let gitExists = false;
+  // Create or update TODO-AI.md if task is provided or it doesn't exist
+  let taskCreated = false;
+  const todoPath = path.join(cwd, 'TODO-AI.md');
   try {
-    await fs.access(gitDir);
-    gitExists = true;
+    await fs.access(todoPath);
   } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      if (!testMode) {
-        try {
-          execSync('git init', { stdio: 'inherit', cwd });
-          gitInitialized = true;
-        } catch (gitError) {
-          // Git command failed (e.g., git not installed) - continue without git
-          console.warn('Note: Git initialization skipped - git may not be installed');
-        }
-      } else {
-        gitInitialized = true;
-      }
-    }
-  }
-
-  // Create config file with editor options
-  const config = {
-    ...defaultConfig,
-    output: {
-      ...defaultConfig.output,
-      cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
-      windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
-      vscode: editorOptions.vscode === undefined ? defaultConfig.output.vscode : Boolean(editorOptions.vscode)
-    }
-  };
-
-  await fs.writeFile(
-    configPath,
-    JSON.stringify(config, null, 2)
-  );
-
-  // Create TODO-AI.md
-  const defaultTask = "Learn from the user about their project, get the idea of what they want to make";
-  const activeTask = task || defaultTask;
-  const status = '⏳ In Progress'; // Always in progress since we always have a task now
-  const todoContent = `# AI Workspace
+    if (error.code === 'ENOENT' || task) {
+      const defaultTask = "Learn from the user about their project, get the idea of what they want to make";
+      const activeTask = task || defaultTask;
+      const status = '⏳ In Progress';
+      const todoContent = `# AI Workspace
 
 ## Active Task
 ${activeTask}
@@ -113,12 +121,12 @@ ${status}
 - Created: ${new Date().toISOString().split('T')[0]}
 `;
 
-  await fs.writeFile(
-    path.join(cwd, 'TODO-AI.md'),
-    todoContent
-  );
+      await fs.writeFile(todoPath, todoContent);
+      taskCreated = true;
+    }
+  }
 
-  // Generate initial rules if documentation exists
+  // Always try to generate rules, whether project is new or existing
   let rulesGenerated = false;
   try {
     rulesGenerated = await generateRules({
@@ -131,10 +139,11 @@ ${status}
   }
 
   return {
-    configCreated: true,
-    taskCreated: true, // Now always true since we always create TODO-AI.md
+    configCreated,
+    taskCreated,
     rulesGenerated,
-    gitInitialized,
-    gitExists
+    gitInitialized: configCreated && gitInitialized,
+    gitExists: configCreated && gitExists,
+    alreadyInitialized: !configCreated
   };
 }
