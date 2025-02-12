@@ -5,6 +5,7 @@ import { join } from 'path';
 import { generateRules } from './generator';
 
 const defaultConfig = {
+  what: "Generate AI rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs",
   sources: [
     'TODO-AI.md',
     'README.md'
