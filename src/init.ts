@@ -6,14 +6,12 @@ import { generateRules } from './generator';
 
 const defaultConfig = {
   sources: [
-    'README.md',
-    'docs/**/*.md',
-    'api-docs/**/*.md'
+    'TODO-AI.md',
+    'README.md'
   ],
   output: {
-    windsurf: true,
     cursor: true,
-    customPath: undefined
+    windsurf: false
   }
 };
 
@@ -71,10 +69,9 @@ export async function initProject(cwd: string, task?: string, testMode = false):
     JSON.stringify(defaultConfig, null, 2)
   );
 
-  // Create TODO-AI.md if task is provided
-  let taskCreated = false;
-  if (task) {
-    const todoContent = `# AI Task Instructions
+  // Create TODO-AI.md
+  const todoContent = task 
+    ? `# AI Task Instructions
 
 ## Task
 ${task}
@@ -90,14 +87,26 @@ ${task}
 ## Context
 - Created: ${new Date().toISOString().split('T')[0]}
 - Command: airul init "${task}"
+`
+    : `# AI Task Instructions
+
+## Status
+🆕 Ready for task
+
+## Instructions for AI
+1. This file contains instructions for AI tools
+2. When starting a task, update this file with task details
+3. Remove this file when no active tasks
+
+## Context
+- Created: ${new Date().toISOString().split('T')[0]}
+- Command: airul init
 `;
 
-    await fs.writeFile(
-      path.join(cwd, 'TODO-AI.md'),
-      todoContent
-    );
-    taskCreated = true;
-  }
+  await fs.writeFile(
+    path.join(cwd, 'TODO-AI.md'),
+    todoContent
+  );
 
   // Generate initial rules if documentation exists
   let rulesGenerated = false;
@@ -113,7 +122,7 @@ ${task}
 
   return {
     configCreated: true,
-    taskCreated,
+    taskCreated: true, // Now always true since we always create TODO-AI.md
     rulesGenerated,
     gitInitialized,
     gitExists

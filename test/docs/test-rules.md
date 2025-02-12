@@ -1,9 +1,11 @@
 # Test Rules
 
 ## Basic Rules
-1. This is a test rule
-2. Another test rule
+1. Write clean code
+2. Add tests
+3. Document changes
 
 ## More Rules
-1. Testing basic functionality
-2. Testing rule generation
+1. Follow style guide
+2. Review code
+3. Update docs

@@ -26,11 +26,11 @@ describe('basic tests', () => {
     await generateRules({
       baseDir: TEST_DIRS.BASIC,
       sources: [join(TEST_DIRS.BASIC, 'test-rules.md')],
-      output: { windsurf: true }
+      output: { cursor: true }
     });
 
     // Verify output
-    const output = await readFile(join(TEST_DIRS.BASIC, '.windsurfrules'), 'utf8');
+    const output = await readFile(join(TEST_DIRS.BASIC, '.cursorrules'), 'utf8');
     expect(output).toContain('# Test Rules');
     expect(output).toContain('## Basic Rules');
     expect(output).toContain('## More Rules');
@@ -46,11 +46,11 @@ describe('basic tests', () => {
     await generateRules({
       baseDir: TEST_DIRS.BASIC,
       sources: [join(TEST_DIRS.BASIC, 'empty.md')],
-      output: { windsurf: true }
+      output: { cursor: true }
     });
 
     // Verify no output file is created
-    const outputFile = join(TEST_DIRS.BASIC, '.windsurfrules');
+    const outputFile = join(TEST_DIRS.BASIC, '.cursorrules');
     let exists = false;
     try {
       await readFile(outputFile);
@@ -66,11 +66,11 @@ describe('basic tests', () => {
     await generateRules({
       baseDir: TEST_DIRS.BASIC,
       sources: [join(TEST_DIRS.BASIC, 'missing.md')],
-      output: { windsurf: true }
+      output: { cursor: true }
     });
 
     // Verify no output file is created
-    const outputFile = join(TEST_DIRS.BASIC, '.windsurfrules');
+    const outputFile = join(TEST_DIRS.BASIC, '.cursorrules');
     let exists = false;
     try {
       await readFile(outputFile);
@@ -95,8 +95,8 @@ describe('basic tests', () => {
       baseDir: TEST_DIRS.BASIC,
       sources: [join(TEST_DIRS.BASIC, 'test-rules.md')],
       output: {
-        windsurf: true,
         cursor: true,
+        windsurf: true,
         customPath: 'custom-rules.txt'
       }
     });
