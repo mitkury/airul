@@ -81,7 +81,7 @@ ${task}
 ⏳ In Progress
 
 ## Instructions
-1. This file is your workspace for managing tasks in this project
+1. This file is yours (AI agent) for managing tasks in this project
 2. Update task status as you make progress
 3. Break down complex tasks into subtasks
 4. Document important decisions and roadblocks
@@ -103,7 +103,7 @@ None
 🆕 Ready
 
 ## Instructions
-1. This file is your workspace for managing tasks in this project
+1. This file is yours (AI agent) for managing tasks in this project
 2. Update task status as you make progress
 3. Break down complex tasks into subtasks
 4. Document important decisions and roadblocks
