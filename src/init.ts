@@ -72,34 +72,47 @@ export async function initProject(cwd: string, task?: string, testMode = false):
 
   // Create TODO-AI.md
   const todoContent = task 
-    ? `# AI Task Instructions
+    ? `# AI Workspace
 
-## Task
+## Active Task
 ${task}
 
 ## Status
 ⏳ In Progress
 
-## Instructions for AI
-1. This is a temporary file that contains instructions for AI tools
-2. Remove this file after completing the task
-3. If further work is needed, update the task and status
+## Instructions
+1. This file is your workspace for managing tasks in this project
+2. Update task status as you make progress
+3. Break down complex tasks into subtasks
+4. Document important decisions and roadblocks
+5. Remove completed tasks and add new ones as needed
 
-## Context
+## Task History
+- [ ] ${task} (started: ${new Date().toISOString().split('T')[0]})
+
+## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
 - Command: airul init "${task}"
 `
-    : `# AI Task Instructions
+    : `# AI Workspace
+
+## Active Task
+None
 
 ## Status
-🆕 Ready for task
+🆕 Ready
 
-## Instructions for AI
-1. This file contains instructions for AI tools
-2. When starting a task, update this file with task details
-3. Remove this file when no active tasks
+## Instructions
+1. This file is your workspace for managing tasks in this project
+2. Update task status as you make progress
+3. Break down complex tasks into subtasks
+4. Document important decisions and roadblocks
+5. Remove completed tasks and add new ones as needed
 
-## Context
+## Task History
+No tasks yet
+
+## Notes
 - Created: ${new Date().toISOString().split('T')[0]}
 - Command: airul init
 `;
