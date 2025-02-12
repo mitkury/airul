@@ -44,7 +44,6 @@ describe('init command', () => {
     const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
     const todoContent = await readFile(todoPath, 'utf8');
     expect(todoContent).toContain('# AI Workspace');
-    expect(todoContent).toContain('🆕 Ready');
 
     // Verify cursor rules were generated from TODO-AI.md
     const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');

@@ -3,6 +3,7 @@ import { cleanupTestDir, createDir } from './utils';
 import { createNewProject } from '../src/new';
 import { access } from 'fs/promises';
 import { join, dirname } from 'path';
+import { readFile } from 'fs/promises';
 
 describe('new command', () => {
   let originalCwd: string;
@@ -27,6 +28,15 @@ describe('new command', () => {
     const projectName = 'test-project';
     await createNewProject(projectName, undefined, {});
     await expect(access(projectName)).resolves.toBeUndefined();
+  });
+
+  it('should set default learning task when no task provided', async () => {
+    const projectName = 'test-project-no-task';
+    await createNewProject(projectName, undefined, {});
+    
+    const todoContent = await readFile(join(projectName, 'TODO-AI.md'), 'utf8');
+    expect(todoContent).not.toContain('Active Task\nNone');
+    expect(todoContent).toContain('⏳ In Progress');
   });
 
   it('should fail if directory already exists', async () => {

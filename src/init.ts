@@ -71,8 +71,9 @@ export async function initProject(cwd: string, task?: string, testMode = false):
   );
 
   // Create TODO-AI.md
-  const activeTask = task || 'None';
-  const status = task ? '⏳ In Progress' : '🆕 Ready';
+  const defaultTask = "Learn from the user about their project, get the idea of what they want to make";
+  const activeTask = task || defaultTask;
+  const status = '⏳ In Progress'; // Always in progress since we always have a task now
   const todoContent = `# AI Workspace
 
 ## Active Task
