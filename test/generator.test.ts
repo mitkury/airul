@@ -1,8 +1,8 @@
 import { TEST_DIRS } from './constants';
-import { cleanupTestDir, createDir } from './utils';
+import { cleanupTestDir, createDir, copyFile } from './utils';
 import { generateRules } from '../src/generator';
 import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 
 describe('generator', () => {
   beforeEach(async () => {
@@ -16,15 +16,16 @@ describe('generator', () => {
   it('should generate rules from test files', async () => {
     // Create test files
     const testFile = join(TEST_DIRS.BASIC, 'test-rules.md');
-    await createDir(TEST_DIRS.BASIC);
-    await createDir(join(__dirname, 'docs'));
-    await readFile(join(__dirname, 'docs', 'test-rules.md'), 'utf8')
-      .then(content => require('fs').promises.writeFile(testFile, content));
+    await createDir(dirname(testFile));
+    await copyFile(
+      join(__dirname, 'docs', 'test-rules.md'),
+      testFile
+    );
 
     // Generate rules
     const result = await generateRules({
       baseDir: TEST_DIRS.BASIC,
-      sources: [testFile],
+      sources: ['test-rules.md'],
       output: { windsurf: true, cursor: true }
     });
 
