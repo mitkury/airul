@@ -99,9 +99,10 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
     return false;
   }
 
-  // Join contents with separator
+  // Add intro context and join contents with separator
   const separator = template.separator || '\n---\n';
-  const fullContent = validContents.join(`${separator}\n`);
+  const intro = `This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of ${files.length} sources.\n\n`;
+  const fullContent = intro + validContents.join(`${separator}\n`);
 
   // Write output files based on configuration
   const writePromises: Promise<void>[] = [];
