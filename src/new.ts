@@ -11,7 +11,7 @@ interface NewProjectOptions {
 
 const isValidProjectName = (name: string): boolean => {
   // Extract just the base name from the path
-  const baseName = name.split('/').pop()?.split('\\').pop() || '';
+  const baseName = name.split(/[/\\]/).pop() || '';
   
   // Project name validation rules
   if (!baseName) return false;
@@ -19,6 +19,10 @@ const isValidProjectName = (name: string): boolean => {
   if (baseName.startsWith('.')) return false;
   if (baseName.includes(' ')) return false;
   if (!/^[a-zA-Z0-9-_]+$/.test(baseName)) return false;
+
+  // Check if the name contains path separators
+  if (name.includes('/') || name.includes('\\')) return false;
+  
   return true;
 };
 
@@ -40,11 +44,19 @@ const openInEditor = async (projectPath: string, editor: string) => {
 
   try {
     const [command, ...args] = cmd;
-    spawn(command, [...args], { 
+    const proc = spawn(command, [...args], { 
       stdio: 'inherit',
       cwd: projectPath,
       detached: true
     });
+    
+    // Allow Node.js to exit even if the editor process is still running
+    proc.unref();
+
+    // In test environment, don't actually launch editors
+    if (process.env.NODE_ENV === 'test') {
+      proc.kill();
+    }
   } catch (error) {
     console.error(`Failed to open in ${editor}. Make sure it's installed and available in PATH.`);
   }
@@ -52,8 +64,8 @@ const openInEditor = async (projectPath: string, editor: string) => {
 
 export const createNewProject = async (
   projectName: string,
-  options: NewProjectOptions,
-  task?: string
+  task?: string,
+  options: NewProjectOptions = {}
 ) => {
   // Validate project name first
   if (!isValidProjectName(projectName)) {
