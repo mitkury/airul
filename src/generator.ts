@@ -68,7 +68,6 @@ function findDocFiles(sources: string[]): string[] {
 }
 
 export async function generateRules(options: GenerateOptions): Promise<boolean> {
-  const { sources, output, template = {} } = options;
   const baseDir = options.baseDir || process.cwd();
 
   // Ensure base directory exists
@@ -76,16 +75,28 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   // Check if project needs initialization
   const configPath = path.join(baseDir, '.airul.json');
+  let config;
   try {
-    await fs.access(configPath);
+    const configContent = await fs.readFile(configPath, 'utf8');
+    config = JSON.parse(configContent);
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // Initialize project if config doesn't exist
-      await initProject(baseDir);
+      const result = await initProject(baseDir);
+      const configContent = await fs.readFile(configPath, 'utf8');
+      config = JSON.parse(configContent);
     } else {
       throw error;
     }
   }
+
+  // Merge provided options with config from file, prioritizing provided options
+  const sources = options.sources || config.sources;
+  const output = {
+    ...config.output,
+    ...options.output
+  };
+  const template = options.template || {};
   
   // Expand glob patterns and deduplicate while preserving order
   const files = await expandAndDeduplicate(sources, baseDir);

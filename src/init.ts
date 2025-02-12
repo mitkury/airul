@@ -122,7 +122,7 @@ ${status}
   let rulesGenerated = false;
   try {
     rulesGenerated = await generateRules({
-      ...defaultConfig,
+      ...config,
       baseDir: cwd
     });
   } catch (error) {

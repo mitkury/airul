@@ -107,4 +107,39 @@ describe('init command', () => {
     expect(config.output.windsurf).toBe(true); // Windsurf enabled by flag
     expect(config.output.vscode).toBe(true); // VSCode enabled by flag
   });
+
+  it('should generate correct rule files based on editor options', async () => {
+    const result = await initProject(TEST_DIRS.INIT, undefined, true, {
+      cursor: true,
+      windsurf: true,
+      vscode: false
+    });
+    
+    expect(result.configCreated).toBe(true);
+    expect(result.rulesGenerated).toBe(true);
+    
+    // Verify both rule files were created
+    const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
+    const windsurfRules = await readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8');
+    
+    // Both should contain the initial content
+    expect(cursorRules).toContain('AI Workspace');
+    expect(windsurfRules).toContain('AI Workspace');
+    
+    // Content should be identical
+    expect(cursorRules).toBe(windsurfRules);
+    
+    // When only windsurf is enabled
+    const windsurfOnlyDir = join(TEST_DIRS.INIT, 'windsurf-only');
+    await createDir(windsurfOnlyDir);
+    await initProject(windsurfOnlyDir, undefined, true, {
+      cursor: false,
+      windsurf: true,
+      vscode: false
+    });
+    
+    // Should have windsurfrules but not cursorrules
+    await expect(readFile(join(windsurfOnlyDir, '.windsurfrules'), 'utf8')).resolves.toBeDefined();
+    await expect(readFile(join(windsurfOnlyDir, '.cursorrules'), 'utf8')).rejects.toThrow();
+  });
 });
