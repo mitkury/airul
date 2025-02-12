@@ -5,6 +5,7 @@ import { generateRules } from './generator';
 
 const defaultConfig = {
   what: "Generate AI rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs",
+  how: "Edit 'sources' to include your important docs (supports glob patterns like 'docs/*.md') and enable/disable AI editors in 'output'",
   sources: [
     'TODO-AI.md',
     'README.md'
