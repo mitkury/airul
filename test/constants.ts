@@ -7,7 +7,8 @@ const TEST_OUTPUT_DIR = join(__dirname, '__test_outputs__');
 export const TEST_DIRS = {
   BASIC: join(TEST_OUTPUT_DIR, 'basic'),
   DOCS: join(TEST_OUTPUT_DIR, 'docs'),
-  INIT: join(TEST_OUTPUT_DIR, 'init')
+  INIT: join(TEST_OUTPUT_DIR, 'init'),
+  NEW: join(TEST_OUTPUT_DIR, 'new')
 } as const;
 
 // Sample package.json content

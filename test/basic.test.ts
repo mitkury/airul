@@ -9,10 +9,6 @@ describe('basic tests', () => {
     await cleanupTestDir(TEST_DIRS.BASIC);
   });
 
-  afterEach(async () => {
-    await cleanupTestDir(TEST_DIRS.BASIC);
-  });
-
   it('should generate rules from a markdown file', async () => {
     // Copy test rules file
     const testFile = join(TEST_DIRS.BASIC, 'test-rules.md');

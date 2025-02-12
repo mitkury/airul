@@ -10,22 +10,17 @@ describe('new command', () => {
   beforeAll(async () => {
     originalCwd = process.cwd();
     // Ensure parent directories exist
-    await createDir(dirname(TEST_DIRS.INIT));
+    await createDir(dirname(TEST_DIRS.NEW));
+  });
+
+  beforeEach(async () => {
+    await cleanupTestDir(TEST_DIRS.NEW);
+    await createDir(TEST_DIRS.NEW);
+    process.chdir(TEST_DIRS.NEW);
   });
 
   afterAll(() => {
     process.chdir(originalCwd);
-  });
-
-  beforeEach(async () => {
-    await cleanupTestDir(TEST_DIRS.INIT);
-    await createDir(TEST_DIRS.INIT);
-    process.chdir(TEST_DIRS.INIT);
-  });
-
-  afterEach(async () => {
-    process.chdir(originalCwd);
-    await cleanupTestDir(TEST_DIRS.INIT);
   });
 
   it('should create a new project directory', async () => {

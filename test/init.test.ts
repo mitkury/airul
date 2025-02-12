@@ -23,10 +23,6 @@ describe('init command', () => {
     process.chdir(TEST_DIRS.INIT);
   });
 
-  afterEach(async () => {
-    process.chdir(originalCwd);
-  });
-
   it('should create .airul.json and TODO-AI.md in new project', async () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true);
     
