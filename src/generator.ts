@@ -5,6 +5,7 @@ import { GenerateOptions } from './types';
 import { dirname } from 'path';
 import { Config } from 'cosmiconfig';
 import console from 'console';
+import { initProject } from './init';
 
 async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
   const seen = new Set<string>();
@@ -63,6 +64,22 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   // Ensure base directory exists
   await fs.mkdir(baseDir, { recursive: true });
+
+  // Check if project needs initialization
+  const configPath = path.join(baseDir, '.airul.json');
+  try {
+    await fs.access(configPath);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      // Initialize project if config doesn't exist
+      const initResult = await initProject(baseDir);
+      if (!initResult.configCreated) {
+        throw new Error('Failed to initialize project');
+      }
+    } else {
+      throw error;
+    }
+  }
   
   // Expand glob patterns and deduplicate while preserving order
   const files = await expandAndDeduplicate(sources, baseDir);

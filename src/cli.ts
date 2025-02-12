@@ -111,7 +111,21 @@ program
   .option('--custom-output <path>', 'Path for additional custom rules output file')
   .action(async (options) => {
     try {
-      const config = await loadConfig(options.config);
+      // Try to load config first
+      let config;
+      try {
+        config = await loadConfig(options.config);
+      } catch (error) {
+        // If config doesn't exist, initialize the project first
+        console.log('Airul is not initialized. Initializing first...');
+        const initResult = await initProject(process.cwd());
+        if (initResult.configCreated) {
+          console.log('✨ Project initialized successfully');
+          config = await loadConfig(options.config);
+        } else {
+          throw new Error('Failed to initialize project');
+        }
+      }
       
       const generateOptions: AirulConfig = {
         ...config,
