@@ -74,8 +74,6 @@ export async function initProject(cwd: string, task?: string, testMode = false):
   const todoContent = task 
     ? `# AI Task Instructions
 
-This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of ${defaultConfig.sources.length} sources.
-
 ## Task
 ${task}
 
@@ -92,8 +90,6 @@ ${task}
 - Command: airul init "${task}"
 `
     : `# AI Task Instructions
-
-This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of ${defaultConfig.sources.length} sources.
 
 ## Status
 🆕 Ready for task
