@@ -11,43 +11,32 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
   const seen = new Set<string>();
   const result: string[] = [];
 
-  console.log('Expanding sources:', sources);
-  console.log('Base directory:', baseDir);
-
   for (const pattern of sources) {
     try {
       // First try to find the file directly
       const filePath = path.isAbsolute(pattern) ? pattern : path.join(baseDir, pattern);
-      console.log('Trying direct file path:', filePath);
       try {
         await fs.access(filePath);
         const normalized = path.normalize(pattern);
         if (!seen.has(normalized)) {
           seen.add(normalized);
           result.push(normalized);
-          console.log('Found file directly:', normalized);
         }
         continue;
-      } catch (error) {
-        console.log('File not found directly, trying glob pattern');
-      }
+      } catch (error) {}
 
       // Try glob pattern
-      console.log('Using glob pattern:', pattern, 'in directory:', baseDir);
       const matches = await glob(pattern, { 
         cwd: baseDir,
         absolute: false,
         nodir: true
       });
       
-      console.log('Glob matches:', matches);
-      
       for (const file of matches) {
         const normalized = path.normalize(file);
         if (!seen.has(normalized)) {
           seen.add(normalized);
           result.push(normalized);
-          console.log('Added glob match:', normalized);
         }
       }
     } catch (error) {
@@ -55,7 +44,6 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
     }
   }
 
-  console.log('Final result:', result);
   return result;
 }
 
@@ -68,10 +56,8 @@ function findDocFiles(sources: string[]): string[] {
   }
 
   if (files.length === 0) {
-    // Add more helpful error message
-    console.error('No documentation files found matching patterns:', sources);
-    console.error('Please check your .airul.json configuration and ensure files exist');
-    process.exit(1);
+    console.warn('No documentation files found');
+    return [];
   }
 
   return files;
@@ -101,8 +87,6 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   }
 
   // Merge provided options with config from file
-  // For sources: use options.sources if provided, otherwise use config.sources
-  // For output: start with config.output, then override with options.output if provided
   const sources = options.sources || config.sources;
   const output = options.output ? {
     ...config.output,
@@ -115,7 +99,6 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   if (files.length === 0) {
     console.warn('No documentation files found');
-    // Don't fail, just return false to indicate no files were generated
     return false;
   }
 
@@ -143,8 +126,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   const validContents = contents.filter(Boolean);
 
   if (validContents.length === 0) {
-    console.warn('Warning: No valid documentation content found');
-    // Don't fail, just return false to indicate no files were generated
+    console.warn('No valid documentation content found');
     return false;
   }
 
