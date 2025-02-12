@@ -109,6 +109,10 @@ describe('init command', () => {
   });
 
   it('should generate correct rule files based on editor options', async () => {
+    // First create a TODO-AI.md file to ensure we have content
+    const todoContent = '# Test Project\n\nThis is a test.';
+    await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
+
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: true,
       windsurf: true,
@@ -123,8 +127,8 @@ describe('init command', () => {
     const windsurfRules = await readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8');
     
     // Both should contain the initial content
-    expect(cursorRules).toContain('AI Workspace');
-    expect(windsurfRules).toContain('AI Workspace');
+    expect(cursorRules).toContain('Test Project');
+    expect(windsurfRules).toContain('Test Project');
     
     // Content should be identical
     expect(cursorRules).toBe(windsurfRules);
@@ -132,6 +136,9 @@ describe('init command', () => {
     // When only windsurf is enabled
     const windsurfOnlyDir = join(TEST_DIRS.INIT, 'windsurf-only');
     await createDir(windsurfOnlyDir);
+    // Create TODO-AI.md in the windsurf-only directory too
+    await writeFile(join(windsurfOnlyDir, 'TODO-AI.md'), todoContent);
+    
     await initProject(windsurfOnlyDir, undefined, true, {
       cursor: false,
       windsurf: true,

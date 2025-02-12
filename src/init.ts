@@ -112,14 +112,19 @@ ${activeTask}
 ## Status
 ${status}
 
-## Instructions
-1. This file is yours (AI agent) for managing tasks in this project
-2. Update task status as you make progress
-3. Remove completed tasks and add new ones as needed
+## Context & Progress
+- Created: ${new Date().toISOString().split('T')[0]}
+- I (AI) will maintain this document as we work together
+- My current focus: Understanding and working on the active task
+
+## Task History
+- Initial task: ${activeTask}
 
 ## Notes
-- Created: ${new Date().toISOString().split('T')[0]}
-`;
+- I'll update this file to track our progress and maintain context
+- I'll keep sections concise but informative
+- I'll update status and add key decisions/changes
+- I'll add new tasks as they come up`;
 
       await fs.writeFile(todoPath, todoContent);
       taskCreated = true;
