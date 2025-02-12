@@ -163,11 +163,14 @@ program
   .option('--vscode', 'Enable and open in VSCode')
   .action(async (directory, task, options) => {
     try {
-      await createNewProject(directory, task, {
-        cursor: options.cursor,
-        windsurf: options.windsurf,
-        vscode: options.vscode
-      });
+      // Convert presence of flags to boolean true
+      const editorOptions = {
+        cursor: options.cursor === undefined ? undefined : true,
+        windsurf: options.windsurf === undefined ? undefined : true,
+        vscode: options.vscode === undefined ? undefined : true
+      };
+      
+      await createNewProject(directory, task, editorOptions);
     } catch (error: any) {
       console.error('Error:', error.message);
       process.exit(1);

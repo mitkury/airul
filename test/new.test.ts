@@ -68,7 +68,9 @@ describe('new command', () => {
 
     for (const editor of editors) {
       const fullName = `${projectName}-${editor}`;
-      await createNewProject(fullName, undefined, { [editor]: true });
+      // Test with explicit flag set to undefined vs true
+      const options = { [editor]: true };
+      await createNewProject(fullName, undefined, options);
       
       // Verify project was created
       await expect(access(fullName)).resolves.toBeUndefined();
@@ -88,6 +90,61 @@ describe('new command', () => {
     }
   });
 
+  it('should handle undefined editor flags correctly', async () => {
+    const projectName = 'test-project-editor-undefined';
+    
+    // Test with all flags undefined (should use defaults)
+    await createNewProject(projectName, undefined, {
+      cursor: undefined,
+      windsurf: undefined,
+      vscode: undefined
+    });
+
+    // Verify project was created
+    await expect(access(projectName)).resolves.toBeUndefined();
+    
+    // Verify editor configuration in .airul.json
+    const configPath = join(projectName, '.airul.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    
+    // Check defaults are maintained
+    expect(config.output.cursor).toBe(true); // cursor is true by default
+    expect(config.output.windsurf).toBe(false); // windsurf is false by default
+    expect(config.output.vscode).toBe(false); // vscode is false by default
+  });
+
+  it('should handle CLI-style flag presence correctly', async () => {
+    const projectName = 'test-project-editor-flags';
+    
+    // Simulate CLI flag presence by setting to undefined
+    await createNewProject(projectName, undefined, {
+      cursor: undefined,
+      windsurf: undefined,
+      vscode: undefined
+    });
+
+    // Create another project with flags present (simulating --windsurf --vscode)
+    const projectNameWithFlags = 'test-project-editor-with-flags';
+    await createNewProject(projectNameWithFlags, undefined, {
+      cursor: undefined, // not specified
+      windsurf: true,   // --windsurf
+      vscode: true      // --vscode
+    });
+
+    const config1 = JSON.parse(await readFile(join(projectName, '.airul.json'), 'utf8'));
+    const config2 = JSON.parse(await readFile(join(projectNameWithFlags, '.airul.json'), 'utf8'));
+
+    // First project should have defaults
+    expect(config1.output.cursor).toBe(true);
+    expect(config1.output.windsurf).toBe(false);
+    expect(config1.output.vscode).toBe(false);
+
+    // Second project should have specified flags enabled
+    expect(config2.output.cursor).toBe(true); // default maintained
+    expect(config2.output.windsurf).toBe(true); // flag enabled
+    expect(config2.output.vscode).toBe(true); // flag enabled
+  });
+
   it('should enable multiple editors when specified', async () => {
     const projectName = 'test-project-multi-editor';
     await createNewProject(projectName, undefined, {
@@ -105,5 +162,24 @@ describe('new command', () => {
     expect(config.output.cursor).toBe(true);
     expect(config.output.windsurf).toBe(true);
     expect(config.output.vscode).toBe(true);
+  });
+
+  it('should enable cursor by default when no flags are passed', async () => {
+    const projectName = 'test-project-default-editor';
+    
+    // Create project without any editor flags
+    await createNewProject(projectName, undefined, {});
+
+    // Verify project was created
+    await expect(access(projectName)).resolves.toBeUndefined();
+    
+    // Verify editor configuration in .airul.json
+    const configPath = join(projectName, '.airul.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    
+    // Check that cursor is enabled by default
+    expect(config.output.cursor).toBe(true);
+    expect(config.output.windsurf).toBe(false);
+    expect(config.output.vscode).toBe(false);
   });
 });

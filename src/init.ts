@@ -81,9 +81,9 @@ export async function initProject(
     ...defaultConfig,
     output: {
       ...defaultConfig.output,
-      cursor: editorOptions.cursor ?? defaultConfig.output.cursor,
-      windsurf: editorOptions.windsurf ?? defaultConfig.output.windsurf,
-      vscode: editorOptions.vscode ?? defaultConfig.output.vscode
+      cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
+      windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
+      vscode: editorOptions.vscode === undefined ? defaultConfig.output.vscode : Boolean(editorOptions.vscode)
     }
   };
 
