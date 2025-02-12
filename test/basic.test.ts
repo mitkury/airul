@@ -6,13 +6,15 @@ import { generateRules } from '../src/generator';
 import { initProject } from '../src/init';
 
 describe('basic tests', () => {
+  const testDir = TEST_DIRS.BASIC;
+
   beforeEach(async () => {
-    await cleanupTestDir(TEST_DIRS.BASIC);
+    await cleanupTestDir(testDir);
   });
 
   it('should generate rules from a markdown file', async () => {
     // Copy test rules file
-    const testFile = join(TEST_DIRS.BASIC, 'test-rules.md');
+    const testFile = join(testDir, 'test-rules.md');
     await createDir(dirname(testFile));
     await copyFile(
       join(__dirname, 'docs', 'test-rules.md'),
@@ -20,17 +22,17 @@ describe('basic tests', () => {
     );
 
     // Initialize project first
-    await initProject(TEST_DIRS.BASIC);
+    await initProject(testDir);
 
     // Generate rules
     await generateRules({
-      baseDir: TEST_DIRS.BASIC,
-      sources: [join(TEST_DIRS.BASIC, 'test-rules.md')],
+      baseDir: testDir,
+      sources: ['test-rules.md'],
       output: { cursor: true }
     });
 
     // Verify output
-    const output = await readFile(join(TEST_DIRS.BASIC, '.cursorrules'), 'utf8');
+    const output = await readFile(join(testDir, '.cursorrules'), 'utf8');
     expect(output).toContain('# Test Rules');
     expect(output).toContain('## Basic Rules');
     expect(output).toContain('## More Rules');
@@ -39,20 +41,20 @@ describe('basic tests', () => {
   it('should handle missing files gracefully', async () => {
     // Generate rules with non-existent file
     const result = await generateRules({
-      baseDir: TEST_DIRS.BASIC,
-      sources: [join(TEST_DIRS.BASIC, 'missing.md')],
+      baseDir: testDir,
+      sources: ['missing.md'],
       output: { cursor: true }
     });
 
     // Verify rules were generated (since we initialize)
-    const outputFile = join(TEST_DIRS.BASIC, '.cursorrules');
+    const outputFile = join(testDir, '.cursorrules');
     const content = await readFile(outputFile, 'utf8');
     expect(content).toContain('AI Workspace'); // From TODO-AI.md
   });
 
   it('should generate multiple output files', async () => {
     // Copy test rules file
-    const testFile = join(TEST_DIRS.BASIC, 'test-rules.md');
+    const testFile = join(testDir, 'test-rules.md');
     await createDir(dirname(testFile));
     await copyFile(
       join(__dirname, 'docs', 'test-rules.md'),
@@ -61,8 +63,8 @@ describe('basic tests', () => {
 
     // Generate rules
     await generateRules({
-      baseDir: TEST_DIRS.BASIC,
-      sources: [join(TEST_DIRS.BASIC, 'test-rules.md')],
+      baseDir: testDir,
+      sources: ['test-rules.md'],
       output: {
         cursor: true,
         windsurf: true,
@@ -71,9 +73,9 @@ describe('basic tests', () => {
     });
 
     // Verify all output files exist and have the same content
-    const windsurfOutput = await readFile(join(TEST_DIRS.BASIC, '.windsurfrules'), 'utf8');
-    const cursorOutput = await readFile(join(TEST_DIRS.BASIC, '.cursorrules'), 'utf8');
-    const customOutput = await readFile(join(TEST_DIRS.BASIC, 'custom-rules.txt'), 'utf8');
+    const windsurfOutput = await readFile(join(testDir, '.windsurfrules'), 'utf8');
+    const cursorOutput = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const customOutput = await readFile(join(testDir, 'custom-rules.txt'), 'utf8');
 
     expect(windsurfOutput).toBe(cursorOutput);
     expect(cursorOutput).toBe(customOutput);

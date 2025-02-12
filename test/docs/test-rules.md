@@ -1,11 +1,11 @@
 # Test Rules
 
 ## Basic Rules
-1. Write clean code
-2. Add tests
-3. Document changes
+1. Use TypeScript for all new files
+2. Add tests for new features
+3. Keep documentation up to date
 
 ## More Rules
-1. Follow style guide
-2. Review code
-3. Update docs
+1. Follow semantic versioning
+2. Use descriptive commit messages
+3. Run tests before committing

@@ -13,21 +13,32 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
 
   for (const pattern of sources) {
     try {
+      // First try to find the file directly
+      const filePath = path.isAbsolute(pattern) ? pattern : path.join(baseDir, pattern);
+      try {
+        await fs.access(filePath);
+        const normalized = path.normalize(pattern);
+        if (!seen.has(normalized)) {
+          seen.add(normalized);
+          result.push(normalized);
+        }
+        continue;
+      } catch (error) {
+        // File doesn't exist directly, try glob
+      }
+
+      // Try glob pattern
       const matches = await glob(pattern, { 
         cwd: baseDir,
-        absolute: false
+        absolute: false,
+        nodir: true
       });
+      
       for (const file of matches) {
         const normalized = path.normalize(file);
         if (!seen.has(normalized)) {
-          // Check if file exists before adding
-          try {
-            await fs.access(path.join(baseDir, normalized));
-            seen.add(normalized);
-            result.push(normalized);
-          } catch (error) {
-            // Skip non-existent files
-          }
+          seen.add(normalized);
+          result.push(normalized);
         }
       }
     } catch (error) {
@@ -58,8 +69,6 @@ function findDocFiles(sources: string[]): string[] {
 
 export async function generateRules(options: GenerateOptions): Promise<boolean> {
   const { sources, output, template = {} } = options;
-  
-  // Use specified base directory or current working directory
   const baseDir = options.baseDir || process.cwd();
 
   // Ensure base directory exists
@@ -72,10 +81,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // Initialize project if config doesn't exist
-      const initResult = await initProject(baseDir);
-      if (!initResult.configCreated) {
-        throw new Error('Failed to initialize project');
-      }
+      await initProject(baseDir);
     } else {
       throw error;
     }
@@ -85,15 +91,16 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   const files = await expandAndDeduplicate(sources, baseDir);
 
   if (files.length === 0) {
-    console.log('No documentation files found');
+    console.warn('No documentation files found');
     return false;
   }
-  
+
   // Read and format content from each file
   const contents = await Promise.all(
     files.map(async (file) => {
       try {
-        const content = await fs.readFile(path.join(baseDir, file), 'utf8');
+        const filePath = path.isAbsolute(file) ? file : path.join(baseDir, file);
+        const content = await fs.readFile(filePath, 'utf8');
         const trimmed = content.trim();
         if (!trimmed) {
           console.warn(`Warning: File ${file} is empty`);
@@ -101,8 +108,8 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
         }
         const fileHeader = template.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
         return `${fileHeader}\n\n${trimmed}`;
-      } catch (error) {
-        console.warn(`Warning: Could not read file ${file}`);
+      } catch (error: any) {
+        console.warn(`Warning: Could not read file ${file}: ${error.message}`);
         return '';
       }
     })
@@ -118,7 +125,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   // Add intro context and join contents with separator
   const separator = template.separator || '\n---\n';
-  const intro = `This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of ${files.length} sources.\n\n`;
+  const intro = `This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of ${validContents.length} sources.\n\n`;
   const fullContent = intro + validContents.join(`${separator}\n`);
 
   // Write output files based on configuration
@@ -137,7 +144,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   }
 
   await Promise.all(writePromises);
-  return true;
+  return writePromises.length > 0;
 }
 
 export async function generate(config: Config) {
