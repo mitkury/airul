@@ -66,7 +66,7 @@ program
   .aliases(['i', 'initialize'])
   .description('Initialize Airul in your project with a default configuration. Optionally specify a task to generate AI-specific instructions.')
   .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
-  .option('--cursor', 'Enable Cursor editor output (default: enabled)')
+  .option('--cursor', 'Enable Cursor editor output (default: enabled only when no other editors are specified)')
   .option('--windsurf', 'Enable Windsurf editor output (default: disabled)')
   .option('--copilot', 'Enable GitHub Copilot output (default: disabled)')
   .option('--code', 'Alias for --copilot')
@@ -161,16 +161,26 @@ program
   .description('Create a new project directory and initialize Airul')
   .argument('<directory>', 'Directory name for the new project')
   .argument('<task>', 'Task description that will be used to generate AI-specific instructions')
-  .option('--cursor', 'Enable and open in Cursor')
+  .option('--cursor', 'Enable and open in Cursor (enabled by default only when no other editors are specified)')
   .option('--windsurf', 'Enable and open in Windsurf')
   .option('--copilot', 'Enable and open in GitHub Copilot')
   .option('--code', 'Alias for --copilot')
   .option('--cline', 'Enable and open in VSCode with Cline extension')
   .action(async (directory, task, options) => {
     try {
+      // Check if any editor flag is present
+      const hasAnyEditorEnabled = options.windsurf === true ||
+        options.copilot === true ||
+        options.code === true ||
+        options.cline === true;
+
       // Convert presence of flags to boolean true
       const editorOptions = {
-        cursor: options.cursor === undefined ? undefined : true,
+        // Enable cursor by default when no other editors are enabled
+        // Only enable cursor by default when no editor is enabled
+        cursor: options.cursor === undefined 
+          ? !hasAnyEditorEnabled
+          : true,
         windsurf: options.windsurf === undefined ? undefined : true,
         copilot: (options.copilot === undefined && options.code === undefined) ? undefined : true,
         cline: options.cline === undefined ? undefined : true

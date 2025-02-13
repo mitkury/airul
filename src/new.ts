@@ -90,12 +90,17 @@ export const createNewProject = async (
     }
     console.log(`Created directory: ${projectName}`);
 
+    // Check if any editor flag is enabled
+    const hasAnyEditorSpecified = Object.values(options).some(val => val === true);
+
     // Initialize airul in the new directory with editor options
     await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test', {
-      cursor: options.cursor,
-      windsurf: options.windsurf,
-      copilot: options.copilot,
-      cline: options.cline
+      cursor: options.cursor === undefined 
+        ? (!hasAnyEditorSpecified) // Only enable cursor when no editors are enabled
+        : Boolean(options.cursor),
+      windsurf: options.windsurf === undefined ? false : Boolean(options.windsurf),
+      copilot: options.copilot === undefined ? false : Boolean(options.copilot),
+      cline: options.cline === undefined ? false : Boolean(options.cline)
     });
 
     // Create README.md from template

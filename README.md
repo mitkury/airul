@@ -67,9 +67,9 @@ Create `.airul.json`:
 {
   "sources": ["README.md", "docs/*.md", "*.txt"],
   "output": {
-    "cursor": true,
-    "windsurf": false,
-    "copilot": false
+    "cursor": true,    /* enabled by default only when no other editors are specified */
+    "windsurf": false, /* disabled by default */
+    "copilot": false   /* disabled by default */
   }
 }
 ```

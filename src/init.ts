@@ -77,14 +77,21 @@ export async function initProject(
       }
 
       // Create config file with editor options
+      const hasAnyEditorEnabled = editorOptions.cursor === true ||
+        editorOptions.windsurf === true ||
+        editorOptions.copilot === true ||
+        editorOptions.cline === true;
+
       config = {
         ...defaultConfig,
         output: {
           ...defaultConfig.output,
-          cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
-          windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
-          copilot: editorOptions.copilot === undefined ? defaultConfig.output.copilot : Boolean(editorOptions.copilot),
-          cline: editorOptions.cline === undefined ? defaultConfig.output.cline : Boolean(editorOptions.cline)
+          cursor: editorOptions.cursor === undefined 
+            ? !hasAnyEditorEnabled // Only enable cursor when no editors are enabled
+            : Boolean(editorOptions.cursor),
+          windsurf: editorOptions.windsurf === undefined ? false : Boolean(editorOptions.windsurf),
+          copilot: editorOptions.copilot === undefined ? false : Boolean(editorOptions.copilot),
+          cline: editorOptions.cline === undefined ? false : Boolean(editorOptions.cline)
         }
       };
 

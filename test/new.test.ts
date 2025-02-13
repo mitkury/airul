@@ -85,7 +85,7 @@ describe('new command', () => {
       // Check other editors maintain their defaults
       const otherEditors = editors.filter(e => e !== editor);
       for (const otherEditor of otherEditors) {
-        expect(config.output[otherEditor]).toBe(otherEditor === 'cursor');
+        expect(config.output[otherEditor]).toBe(false); // All other editors should be disabled
       }
     }
   });
@@ -140,7 +140,7 @@ describe('new command', () => {
     expect(config1.output.copilot).toBe(false);
 
     // Second project should have specified flags enabled
-    expect(config2.output.cursor).toBe(true); // default maintained
+    expect(config2.output.cursor).toBe(false); // cursor should be disabled when other editors are enabled
     expect(config2.output.windsurf).toBe(true); // flag enabled
     expect(config2.output.copilot).toBe(true); // flag enabled
   });
