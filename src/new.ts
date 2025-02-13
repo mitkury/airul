@@ -7,7 +7,7 @@ interface NewProjectOptions {
   // Editor configuration
   cursor?: boolean;
   windsurf?: boolean;
-  vscode?: boolean;
+  copilot?: boolean;
 }
 
 const isValidProjectName = (name: string): boolean => {
@@ -33,10 +33,10 @@ const openInEditor = async (projectPath: string, editor: string) => {
     return;
   }
 
-  type EditorCommand = 'vscode' | 'code' | 'cursor' | 'windsurf' | 'ws';
+  type EditorCommand = 'copilot' | 'code' | 'cursor' | 'windsurf' | 'ws';
 
   const commands: Record<EditorCommand, string[]> = {
-    vscode: ['code', '.'],
+    copilot: ['code', '.'],
     code: ['code', '.'],
     cursor: ['cursor', '.'],
     windsurf: ['windsurf', '.'],
@@ -92,7 +92,7 @@ export const createNewProject = async (
     await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test', {
       cursor: options.cursor,
       windsurf: options.windsurf,
-      vscode: options.vscode
+      copilot: options.copilot
     });
 
     // Create README.md from template
@@ -110,7 +110,7 @@ export const createNewProject = async (
 
     // Open in editors if flags are set
     if (options.cursor) await openInEditor(projectPath, 'cursor');
-    if (options.vscode) await openInEditor(projectPath, 'vscode');
+    if (options.copilot) await openInEditor(projectPath, 'copilot');
     if (options.windsurf) await openInEditor(projectPath, 'windsurf');
 
   } catch (error: any) {

@@ -4,8 +4,8 @@ import { execSync } from 'child_process';
 import { generateRules } from './generator';
 
 const defaultConfig = {
-  what: "Generate AI rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs",
-  how: "Edit 'sources' to include your important docs (supports glob patterns like 'docs/*.md') and enable/disable AI editors in 'output'",
+  what: "Generate AI rules from your documentation for Cursor, Windsurf, GitHub Copilot, and other AI-powered tools",
+  how: "Edit 'sources' to include your important docs (supports glob patterns like 'docs/*.md') and enable/disable AI tools in 'output'",
   sources: [
     'TODO-AI.md',
     'README.md'
@@ -13,14 +13,14 @@ const defaultConfig = {
   output: {
     cursor: true,
     windsurf: false,
-    vscode: false
+    copilot: false
   }
 };
 
-interface EditorOptions {
+export interface EditorOptions {
   cursor?: boolean;
   windsurf?: boolean;
-  vscode?: boolean;
+  copilot?: boolean;
 }
 
 interface InitResult {
@@ -80,7 +80,7 @@ export async function initProject(
           ...defaultConfig.output,
           cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
           windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
-          vscode: editorOptions.vscode === undefined ? defaultConfig.output.vscode : Boolean(editorOptions.vscode)
+          copilot: editorOptions.copilot === undefined ? defaultConfig.output.copilot : Boolean(editorOptions.copilot)
         }
       };
 

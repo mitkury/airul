@@ -39,7 +39,7 @@ describe('init command', () => {
     expect(config.sources).toContain('TODO-AI.md');
     expect(config.output.cursor).toBe(true); // Cursor enabled by default
     expect(config.output.windsurf).toBe(false); // Windsurf disabled by default
-    expect(config.output.vscode).toBe(false); // VSCode disabled by default
+    expect(config.output.copilot).toBe(false); // Copilot disabled by default
 
     // Verify TODO-AI.md exists and has correct content
     const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
@@ -95,7 +95,7 @@ describe('init command', () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: false,
       windsurf: true,
-      vscode: true
+      copilot: false
     });
     
     expect(result.configCreated).toBe(true);
@@ -105,7 +105,7 @@ describe('init command', () => {
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config.output.cursor).toBe(false); // Cursor disabled by flag
     expect(config.output.windsurf).toBe(true); // Windsurf enabled by flag
-    expect(config.output.vscode).toBe(true); // VSCode enabled by flag
+    expect(config.output.copilot).toBe(false); // Copilot disabled by flag
   });
 
   it('should generate correct rule files based on editor options', async () => {
@@ -116,7 +116,7 @@ describe('init command', () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: true,
       windsurf: true,
-      vscode: false
+      copilot: true
     });
     
     expect(result.configCreated).toBe(true);
@@ -142,11 +142,38 @@ describe('init command', () => {
     await initProject(windsurfOnlyDir, undefined, true, {
       cursor: false,
       windsurf: true,
-      vscode: false
+      copilot: false
     });
     
     // Should have windsurfrules but not cursorrules
     await expect(readFile(join(windsurfOnlyDir, '.windsurfrules'), 'utf8')).resolves.toBeDefined();
     await expect(readFile(join(windsurfOnlyDir, '.cursorrules'), 'utf8')).rejects.toThrow();
+  });
+
+  it('should generate Copilot instructions when enabled', async () => {
+    // Create test content
+    const todoContent = '# Test Project\n\nThis is a test project with specific conventions.';
+    await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
+
+    const result = await initProject(TEST_DIRS.INIT, undefined, true, {
+      cursor: false,
+      windsurf: false,
+      copilot: true
+    });
+    
+    expect(result.configCreated).toBe(true);
+    expect(result.rulesGenerated).toBe(true);
+
+    // Verify Copilot instructions were created
+    const copilotInstructions = await readFile(join(TEST_DIRS.INIT, '.github', 'copilot-instructions.md'), 'utf8');
+    
+    // Check content
+    expect(copilotInstructions).toContain('Test Project');
+    expect(copilotInstructions).toContain('This is a test project with specific conventions');
+    expect(copilotInstructions).toContain('This is a context for AI editor/agent about the project');
+
+    // Verify other rule files were not created
+    await expect(readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8')).rejects.toThrow();
+    await expect(readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8')).rejects.toThrow();
   });
 });

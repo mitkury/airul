@@ -1,33 +1,64 @@
 # Airul
 
-Generate rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs.
+Airul generates context for AI agents from your documentation. It gives AI immediate access to up-to-date important info about your project.
 
-## Quick Start
+## Use Cases
+
+### Starting a New Project
 
 ```bash
-# Install globally (recommended for init)
+# Install as a CLI tool
 npm install -g airul
 
-# Initialize project (this will add airul as a dev dependency)
-airul init
+# Create a new project and open in Cursor
+airul new my-project "Create a React app with authentication" --cursor
 
-# Or start with an AI task
-airul init "Create a React component"
+# This will:
+# 1. Create my-project directory
+# 2. Initialize git repository
+# 3. Create initial documentation
+# 4. Generate AI context files
+# 5. Open in Cursor (and other editors if specified)
+```
 
-# Generate rules using local installation
+### Adding to Existing Project
+
+```bash
+# Install as a CLI tool
+npm install -g airul
+
+# Initialize airul in your project
+airul init 
+
+# This will:
+# 1. Add airul as dev dependency
+# 2. Create .airul.json config
+# 3. Create initial documentation
+# 4. Generate AI context files
+```
+
+### Keeping Context Updated
+
+After making changes to your project:
+```bash
+# Update AI context after:
+# - Adding/modifying documentation
+# - Installing new dependencies
+# - Changing project structure
+airul gen
+
+# Or use npm script (recommended)
 npm run rules
 ```
 
 ## Features
 
-- 🎯 Automatically generate rules (`.windsurfrules` and `.cursorrules`) from your docs
+- 🎯 Generate AI context files for multiple tools:
+  - GitHub Copilot (.github/copilot-instructions.md)
+  - Cursor (.cursorrules)
+  - Windsurf (.windsurfrules)
 - 📝 Works with any text files (markdown, txt, etc.)
-- ⚙️ Simple output configuration
-
-## Documentation
-
-- [Getting Started Guide](docs/getting-started.md)
-- [Writing Effective Rules](docs/rules-guide.md)
+- ⚙️ Simple configuration
 
 ## Example
 
@@ -36,8 +67,9 @@ Create `.airul.json`:
 {
   "sources": ["README.md", "docs/*.md", "*.txt"],
   "output": {
-    "windsurf": true,
-    "cursor": true
+    "cursor": true,
+    "windsurf": false,
+    "copilot": false
   }
 }
 ```
@@ -46,6 +78,11 @@ Run:
 ```bash
 npm run rules
 ```
+
+This will:
+1. Scan your documentation files
+2. Generate AI context files based on your output settings
+3. Format the content appropriately for each tool
 
 ## License
 

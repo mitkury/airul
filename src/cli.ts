@@ -68,13 +68,13 @@ program
   .argument('[task]', 'Optional task description that will be used to generate AI-specific instructions in TODO-AI.md')
   .option('--cursor', 'Enable Cursor editor output (default: enabled)')
   .option('--windsurf', 'Enable Windsurf editor output (default: disabled)')
-  .option('--vscode', 'Enable VSCode editor output (default: disabled)')
+  .option('--copilot', 'Enable GitHub Copilot output (default: disabled)')
   .action(async (task, options) => {
     try {
       const result = await initProject(process.cwd(), task, process.env.NODE_ENV === 'test', {
         cursor: options.cursor,
         windsurf: options.windsurf,
-        vscode: options.vscode
+        copilot: options.copilot
       });
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
@@ -160,14 +160,14 @@ program
   .argument('<task>', 'Task description that will be used to generate AI-specific instructions')
   .option('--cursor', 'Enable and open in Cursor')
   .option('--windsurf', 'Enable and open in Windsurf')
-  .option('--vscode', 'Enable and open in VSCode')
+  .option('--copilot', 'Enable and open in GitHub Copilot')
   .action(async (directory, task, options) => {
     try {
       // Convert presence of flags to boolean true
       const editorOptions = {
         cursor: options.cursor === undefined ? undefined : true,
         windsurf: options.windsurf === undefined ? undefined : true,
-        vscode: options.vscode === undefined ? undefined : true
+        copilot: options.copilot === undefined ? undefined : true
       };
       
       await createNewProject(directory, task, editorOptions);
