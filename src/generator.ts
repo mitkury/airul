@@ -133,6 +133,10 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
     writePromises.push(fs.writeFile(path.join(baseDir, '.cursorrules'), fullContent));
   }
 
+  if (mergedConfig.output.cline) {
+    writePromises.push(fs.writeFile(path.join(baseDir, '.clinerules'), fullContent));
+  }
+
   if (mergedConfig.output.copilot) {
     // Create .github directory if it doesn't exist
     const githubDir = path.join(baseDir, '.github');

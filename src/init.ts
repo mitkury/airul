@@ -14,7 +14,8 @@ const defaultConfig = {
   output: {
     cursor: true,
     windsurf: false,
-    copilot: false
+    copilot: false,
+    cline: false
   }
 };
 
@@ -22,6 +23,7 @@ export interface EditorOptions {
   cursor?: boolean;
   windsurf?: boolean;
   copilot?: boolean;
+  cline?: boolean;
 }
 
 interface InitResult {
@@ -81,7 +83,8 @@ export async function initProject(
           ...defaultConfig.output,
           cursor: editorOptions.cursor === undefined ? defaultConfig.output.cursor : Boolean(editorOptions.cursor),
           windsurf: editorOptions.windsurf === undefined ? defaultConfig.output.windsurf : Boolean(editorOptions.windsurf),
-          copilot: editorOptions.copilot === undefined ? defaultConfig.output.copilot : Boolean(editorOptions.copilot)
+          copilot: editorOptions.copilot === undefined ? defaultConfig.output.copilot : Boolean(editorOptions.copilot),
+          cline: editorOptions.cline === undefined ? defaultConfig.output.cline : Boolean(editorOptions.cline)
         }
       };
 

@@ -16,6 +16,7 @@ export interface AirulConfig {
     windsurf?: boolean;
     cursor?: boolean;
     copilot?: boolean;
+    cline?: boolean;
     customPath?: string;
   };
 
@@ -34,4 +35,25 @@ export interface AirulConfig {
   ignore?: string[];
 }
 
-export interface GenerateOptions extends AirulConfig {}
+export interface EditorOptions {
+  cursor?: boolean;
+  windsurf?: boolean;
+  copilot?: boolean;
+  cline?: boolean;
+}
+
+export interface GenerateOptions {
+  sources?: string[];
+  output?: {
+    cursor?: boolean;
+    windsurf?: boolean;
+    copilot?: boolean;
+    cline?: boolean;
+    customPath?: string;
+  };
+  template?: {
+    fileHeader?: string;
+    separator?: string;
+  };
+  baseDir?: string;
+}

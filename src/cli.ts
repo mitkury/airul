@@ -70,12 +70,14 @@ program
   .option('--windsurf', 'Enable Windsurf editor output (default: disabled)')
   .option('--copilot', 'Enable GitHub Copilot output (default: disabled)')
   .option('--code', 'Alias for --copilot')
+  .option('--cline', 'Enable Cline VSCode extension output (default: disabled)')
   .action(async (task, options) => {
     try {
       const result = await initProject(process.cwd(), task, process.env.NODE_ENV === 'test', {
         cursor: options.cursor,
         windsurf: options.windsurf,
-        copilot: options.copilot || options.code
+        copilot: options.copilot || options.code,
+        cline: options.cline
       });
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
@@ -163,13 +165,15 @@ program
   .option('--windsurf', 'Enable and open in Windsurf')
   .option('--copilot', 'Enable and open in GitHub Copilot')
   .option('--code', 'Alias for --copilot')
+  .option('--cline', 'Enable and open in VSCode with Cline extension')
   .action(async (directory, task, options) => {
     try {
       // Convert presence of flags to boolean true
       const editorOptions = {
         cursor: options.cursor === undefined ? undefined : true,
         windsurf: options.windsurf === undefined ? undefined : true,
-        copilot: (options.copilot === undefined && options.code === undefined) ? undefined : true
+        copilot: (options.copilot === undefined && options.code === undefined) ? undefined : true,
+        cline: options.cline === undefined ? undefined : true
       };
       
       await createNewProject(directory, task, editorOptions);

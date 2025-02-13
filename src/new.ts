@@ -8,6 +8,7 @@ interface NewProjectOptions {
   cursor?: boolean;
   windsurf?: boolean;
   copilot?: boolean;
+  cline?: boolean;
 }
 
 const isValidProjectName = (name: string): boolean => {
@@ -33,14 +34,15 @@ const openInEditor = async (projectPath: string, editor: string) => {
     return;
   }
 
-  type EditorCommand = 'copilot' | 'code' | 'cursor' | 'windsurf' | 'ws';
+  type EditorCommand = 'copilot' | 'code' | 'cursor' | 'windsurf' | 'ws' | 'cline';
 
   const commands: Record<EditorCommand, string[]> = {
     copilot: ['code', '.'],
     code: ['code', '.'],
     cursor: ['cursor', '.'],
     windsurf: ['windsurf', '.'],
-    ws: ['windsurf', '.']
+    ws: ['windsurf', '.'],
+    cline: ['code', '.']
   };
 
   const cmd = commands[editor.toLowerCase() as EditorCommand];
@@ -92,7 +94,8 @@ export const createNewProject = async (
     await initProject(projectPath, task || defaultTask, process.env.NODE_ENV === 'test', {
       cursor: options.cursor,
       windsurf: options.windsurf,
-      copilot: options.copilot
+      copilot: options.copilot,
+      cline: options.cline
     });
 
     // Create README.md from template
@@ -112,6 +115,7 @@ export const createNewProject = async (
     if (options.cursor) await openInEditor(projectPath, 'cursor');
     if (options.copilot) await openInEditor(projectPath, 'copilot');
     if (options.windsurf) await openInEditor(projectPath, 'windsurf');
+    if (options.cline) await openInEditor(projectPath, 'cline');
 
   } catch (error: any) {
     if (process.env.NODE_ENV === 'test') {
