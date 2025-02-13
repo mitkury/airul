@@ -9,6 +9,7 @@ import { AirulConfig } from './types';
 import { initProject } from './init';
 import { createNewProject } from './new';
 import { execSync, spawn } from 'child_process';
+import { getEditorOptions } from './utils';
 
 const { version } = require('../package.json');
 
@@ -73,12 +74,12 @@ program
   .option('--cline', 'Enable Cline VSCode extension output (default: disabled)')
   .action(async (task, options) => {
     try {
-      const result = await initProject(process.cwd(), task, process.env.NODE_ENV === 'test', {
-        cursor: options.cursor,
-        windsurf: options.windsurf,
-        copilot: options.copilot || options.code,
-        cline: options.cline
-      });
+      const result = await initProject(
+        process.cwd(), 
+        task, 
+        process.env.NODE_ENV === 'test',
+        getEditorOptions(options)
+      );
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
       if (result.gitInitialized) {
@@ -113,11 +114,14 @@ program
 program
   .command('generate')
   .aliases(['gen', 'g'])
-  .description('Generate AI rules by scanning your documentation files. Creates .windsurfrules and .cursorrules files that help AI tools understand your project.')
+  .description('Generate AI rules by scanning your documentation files. Creates rule files based on your configuration.')
   .option('-c, --config <path>', 'Path to .airul.json config file. Default: .airul.json in current directory')
   .option('-s, --sources <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
-  .option('--no-windsurf', 'Disable .windsurfrules output for Windsurf IDE')
-  .option('--no-cursor', 'Disable .cursorrules output for Cursor IDE')
+  .option('--windsurf', 'Enable .windsurfrules output for Windsurf IDE')
+  .option('--cursor', 'Enable .cursorrules output for Cursor IDE')
+  .option('--copilot', 'Enable GitHub Copilot output')
+  .option('--code', 'Alias for --copilot')
+  .option('--cline', 'Enable Cline VSCode extension output')
   .option('--custom-output <path>', 'Path for additional custom rules output file')
   .action(async (options) => {
     try {
@@ -137,12 +141,13 @@ program
         }
       }
       
+      const editorOptions = getEditorOptions(options);
       const generateOptions: AirulConfig = {
         ...config,
         sources: options.sources || config.sources,
         output: {
-          windsurf: options.windsurf ?? config.output.windsurf,
-          cursor: options.cursor ?? config.output.cursor,
+          ...config.output,
+          ...editorOptions,
           customPath: options.customOutput || config.output.customPath
         }
       };
