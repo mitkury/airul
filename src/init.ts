@@ -2,10 +2,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { generateRules } from './generator';
+import { prompts } from './prompts';
 
 const defaultConfig = {
-  what: "Generate AI rules from your documentation for Cursor, Windsurf, GitHub Copilot, and other AI-powered tools",
-  how: "Edit 'sources' to include your important docs (supports glob patterns like 'docs/*.md') and enable/disable AI tools in 'output'",
+  what: prompts.configWhat,
+  how: prompts.configHow,
   sources: [
     'TODO-AI.md',
     'README.md'
@@ -65,7 +66,7 @@ export async function initProject(
               gitInitialized = true;
             } catch (gitError) {
               // Git command failed (e.g., git not installed) - continue without git
-              console.warn('Note: Git initialization skipped - git may not be installed');
+              console.warn(prompts.gitInitSkipped);
             }
           } else {
             gitInitialized = true;
@@ -101,30 +102,10 @@ export async function initProject(
     await fs.access(todoPath);
   } catch (error: any) {
     if (error.code === 'ENOENT' || task) {
-      const defaultTask = "Learn from the user about their project, get the idea of what they want to make";
+      const defaultTask = prompts.defaultTask;
       const activeTask = task || defaultTask;
-      const status = '⏳ In Progress';
-      const todoContent = `# AI Workspace
-
-## Active Task
-${activeTask}
-
-## Status
-${status}
-
-## Context & Progress
-- Created: ${new Date().toISOString().split('T')[0]}
-- I (AI) will maintain this document as we work together
-- My current focus: Understanding and working on the active task
-
-## Task History
-- Initial task: ${activeTask}
-
-## Notes
-- I'll update this file to track our progress and maintain context
-- I'll keep sections concise but informative
-- I'll update status and add key decisions/changes
-- I'll add new tasks as they come up`;
+      const date = new Date().toISOString().split('T')[0];
+      const todoContent = prompts.todoTemplate(activeTask, date);
 
       await fs.writeFile(todoPath, todoContent);
       taskCreated = true;
@@ -140,7 +121,7 @@ ${status}
     });
   } catch (error) {
     // Don't fail initialization if rules generation fails
-    console.warn('Note: Initial rules generation skipped - add documentation first');
+    console.warn(prompts.rulesGenerationSkipped);
   }
 
   return {

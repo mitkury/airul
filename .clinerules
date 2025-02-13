@@ -1,0 +1,81 @@
+This is a context for AI editor/agent about the project. It's generated with a tool "airul" (https://airul.dev) out of 2 sources.
+
+# From TODO-AI.md:
+
+# AI Workspace
+
+## Active Task
+Learn from the user about their project, get the idea of what they want to make
+
+## Status
+⏳ In Progress
+
+## Context & Progress
+- Created: 2025-02-12
+- I (AI) will maintain this document as we work together
+- My current focus: Understanding and working on the active task
+
+## Task History
+- Initial task: Learn from the user about their project, get the idea of what they want to make
+
+## Notes
+- I'll update this file to track our progress and maintain context
+- I'll keep sections concise but informative
+- I'll update status and add key decisions/changes
+- I'll add new tasks as they come up
+---
+
+# From README.md:
+
+# Airul
+
+Generate rules from your documentation for Cursor, Windsurf, and other AI-powered IDEs.
+
+## Quick Start
+
+```bash
+# Install globally (recommended for init)
+npm install -g airul
+
+# Initialize project (this will add airul as a dev dependency)
+airul init
+
+# Or start with an AI task
+airul init "Create a React component"
+
+# Generate rules using local installation
+npm run rules
+```
+
+## Features
+
+- 🎯 Automatically generate rules (`.windsurfrules` and `.cursorrules`) from your docs
+- 📝 Works with any text files (markdown, txt, etc.)
+- ⚙️ Simple output configuration
+
+## Documentation
+
+- [Getting Started Guide](docs/getting-started.md)
+- [Writing Effective Rules](docs/rules-guide.md)
+
+## Example
+
+Create `.airul.json`:
+```json
+{
+  "sources": ["README.md", "docs/*.md", "*.txt"],
+  "output": {
+    "windsurf": true,
+    "cursor": true
+  }
+}
+```
+
+Run:
+```bash
+npm run rules
+```
+
+## License
+
+MIT

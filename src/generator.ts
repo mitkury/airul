@@ -6,6 +6,7 @@ import { dirname } from 'path';
 import { Config } from 'cosmiconfig';
 import console from 'console';
 import { initProject } from './init';
+import { prompts } from './prompts';
 
 async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
   const seen = new Set<string>();
@@ -40,7 +41,7 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
         }
       }
     } catch (error) {
-      console.warn(`Warning: Invalid glob pattern ${pattern}:`, error);
+      console.warn(prompts.invalidGlobWarning(pattern, error));
     }
   }
 
@@ -85,7 +86,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   const files = await expandAndDeduplicate(mergedConfig.sources, baseDir);
 
   if (files.length === 0) {
-    console.warn('No sources found');
+    console.warn(prompts.noSourcesFound);
     return false;
   }
 
@@ -97,13 +98,13 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
         const content = await fs.readFile(filePath, 'utf8');
         const trimmed = content.trim();
         if (!trimmed) {
-          console.warn(`Warning: File ${file} is empty`);
+          console.warn(prompts.emptyFileWarning(file));
           return '';
         }
         const fileHeader = mergedConfig.template?.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
         return `${fileHeader}\n\n${trimmed}`;
       } catch (error: any) {
-        console.warn(`Warning: Could not read file ${file}: ${error.message}`);
+        console.warn(prompts.fileReadError(file, error.message));
         return '';
       }
     })
@@ -118,7 +119,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   // Add intro context and join contents with separator
   const separator = mergedConfig.template?.separator || '\n---\n';
-  const intro = `This is a context for AI editor/agent about the project. It's generated with a tool Airul (https://airul.dev) out of ${validContents.length} sources. Feel free to edit .airul.json to change the sources and configure editors.\n\n`;
+  const intro = prompts.contextIntro(validContents.length) + '\n\n';
   const fullContent = intro + validContents.join(`${separator}\n`);
 
   // Write output files based on configuration
