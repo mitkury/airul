@@ -1,10 +1,10 @@
 # Airul
 
-Airul generates context for AI agents from your documentation. It gives AI immediate access to up-to-date important info about your project.
+Airul generates context for AI agents from your docs. It gives AI immediate access to up-to-date important info about your project.
 
-## Use Cases
+## How to use
 
-### Starting a New Project
+### Starting a new project
 
 ```bash
 # Install as a CLI tool
@@ -21,7 +21,7 @@ airul new my-project "Create a React app with authentication" --cursor
 # 5. Open in Cursor (and other editors if specified)
 ```
 
-### Adding to Existing Project
+### Adding to existing project
 
 ```bash
 # Install as a CLI tool
@@ -37,19 +37,46 @@ airul init
 # 4. Generate AI context files
 ```
 
-### Keeping Context Updated
+### Keeping context updated
 
-After making changes to your project:
-```bash
-# Update AI context after:
-# - Adding/modifying documentation
-# - Installing new dependencies
-# - Changing project structure
-airul gen
+After making changes to your project, you have two options to update the AI context:
 
-# Or use npm script (recommended)
-npm run rules
+#### Option 1: NPM Scripts (Recommended)
+Add airul to your package.json:
+```json
+{
+  "devDependencies": {
+    "airul": "latest"
+  },
+  "scripts": {
+    "rules": "airul gen",
+    "prestart": "airul gen",
+    "prebuild": "airul gen"
+  }
+}
 ```
+
+Then run:
+```bash
+# Manual update
+npm run rules
+
+# Automatic update before npm start/build
+npm start
+npm run build
+```
+
+#### Option 2: CLI Command
+If installed globally:
+```bash
+# Update AI context manually
+airul gen
+```
+
+Both approaches will update context when you:
+- Add/modify documentation
+- Install new dependencies
+- Change project structure
 
 ## Features
 
