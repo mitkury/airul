@@ -50,6 +50,7 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
 
 export async function generateRules(options: GenerateOptions): Promise<boolean> {
   const baseDir = options.baseDir || process.cwd();
+  const fileStatuses = new Map<string, { included: boolean, error?: string }>();
 
   // Ensure base directory exists
   await fs.mkdir(baseDir, { recursive: true });
@@ -82,6 +83,11 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
     template: options.template || config.template || {}
   };
 
+  // Track all source files before expansion
+  for (const source of mergedConfig.sources) {
+    fileStatuses.set(source, { included: false });
+  }
+
   // Expand glob patterns and deduplicate while preserving order
   const files = await expandAndDeduplicate(mergedConfig.sources, baseDir);
 
@@ -98,12 +104,15 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
         const content = await fs.readFile(filePath, 'utf8');
         const trimmed = content.trim();
         if (!trimmed) {
+          fileStatuses.set(file, { included: false, error: 'file is empty' });
           console.warn(prompts.emptyFileWarning(file));
           return '';
         }
         const fileHeader = mergedConfig.template?.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
+        fileStatuses.set(file, { included: true });
         return `${fileHeader}\n\n${trimmed}`;
       } catch (error: any) {
+        fileStatuses.set(file, { included: false, error: 'couldn\'t find the file' });
         console.warn(prompts.fileReadError(file, error.message));
         return '';
       }
@@ -149,6 +158,15 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   }
 
   await Promise.all(writePromises);
+
+  // Print summary
+  console.log('\nFile status summary:');
+  for (const [file, status] of fileStatuses.entries()) {
+    const symbol = status.included ? '✓' : '✗';
+    const message = status.error ? ` (${status.error})` : '';
+    console.log(`${symbol} ${file}${message}`);
+  }
+
   return writePromises.length > 0;
 }
 

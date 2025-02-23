@@ -284,4 +284,156 @@ describe('generator', () => {
       expect(copilotContent).toContain('This is a context for AI editor/agent about the project');
     }
   });
+
+  it('should generate rules from README.md and docs/dev/rules-for-ai.md', async () => {
+    // Create test files and directories
+    await createDir(join(testDir, 'docs', 'dev'));
+    
+    // Create README.md
+    const readmeContent = '# Test Project\nThis is a test README';
+    await writeFile(join(testDir, 'README.md'), readmeContent);
+    
+    // Create rules-for-ai.md
+    const rulesContent = '# AI Rules\nThese are test rules';
+    await writeFile(join(testDir, 'docs', 'dev', 'rules-for-ai.md'), rulesContent);
+
+    // Create .airul.json with the same config as user
+    const config = {
+      sources: [
+        'README.md',
+        'docs/dev/rules-for-ai.md'
+      ],
+      output: {
+        windsurf: true,
+        cursor: true
+      }
+    };
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify(config, null, 2));
+
+    // Generate rules
+    const result = await generateRules({
+      baseDir: testDir,
+      ...config
+    });
+
+    expect(result).toBe(true);
+
+    // Verify output files exist and contain content from both sources
+    const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
+    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+
+    // Should contain content from both files
+    expect(windsurfRules).toContain('Test Project');
+    expect(windsurfRules).toContain('AI Rules');
+    expect(cursorRules).toContain('Test Project');
+    expect(cursorRules).toContain('AI Rules');
+  });
+
+  it('should handle missing files and still generate rules from available ones', async () => {
+    // Create test files and directories
+    await createDir(join(testDir, 'docs', 'dev'));
+    
+    // Create README.md
+    const readmeContent = '# Test Project\nThis is a test README';
+    await writeFile(join(testDir, 'README.md'), readmeContent);
+    
+    // Note: intentionally not creating rules-for-ai.md to test missing file case
+    
+    // Create .airul.json with both existing and non-existing files
+    const config = {
+      sources: [
+        'README.md',
+        'docs/dev/rules-for-ai.md', // This file won't exist
+        'non-existent.md'           // This file won't exist
+      ],
+      output: {
+        windsurf: true,
+        cursor: true
+      }
+    };
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify(config, null, 2));
+
+    // Generate rules
+    const result = await generateRules({
+      baseDir: testDir,
+      ...config
+    });
+
+    expect(result).toBe(true);
+
+    // Verify files were generated with available content
+    const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
+    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    
+    // Should contain content from README.md
+    expect(windsurfRules).toContain('Test Project');
+    expect(cursorRules).toContain('Test Project');
+    
+    // Should have same content in both files
+    expect(windsurfRules).toBe(cursorRules);
+  });
+
+  it('should update rules when docs are modified', async () => {
+    // Step 1: Initial setup with proper initialization
+    await createDir(join(testDir, 'docs'));
+    
+    // Create initial README.md
+    const initialContent = '# Test Project\nInitial content';
+    await writeFile(join(testDir, 'README.md'), initialContent);
+    
+    // Initialize project first
+    const initResult = await initProject(testDir);
+    expect(initResult.configCreated).toBe(true);
+    expect(initResult.taskCreated).toBe(true);
+
+    // Update config to include our README.md
+    const config = {
+      sources: ['README.md', 'TODO-AI.md'], // Include both files
+      output: {
+        windsurf: true,
+        cursor: true
+      }
+    };
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify(config, null, 2));
+
+    // Generate rules first time
+    await generateRules({
+      baseDir: testDir,
+      ...config
+    });
+
+    // Verify initial content
+    const initialWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
+    const initialCursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    expect(initialWindsurfRules).toContain('Initial content');
+    expect(initialCursorRules).toContain('Initial content');
+
+    // Step 2: Modify docs
+    const updatedContent = '# Test Project\nUpdated content\nNew section added';
+    await writeFile(join(testDir, 'README.md'), updatedContent);
+
+    // Generate rules again
+    await generateRules({
+      baseDir: testDir,
+      ...config
+    });
+
+    // Verify content was updated
+    const updatedWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
+    const updatedCursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    
+    // Should contain new content
+    expect(updatedWindsurfRules).toContain('Updated content');
+    expect(updatedWindsurfRules).toContain('New section added');
+    expect(updatedCursorRules).toContain('Updated content');
+    expect(updatedCursorRules).toContain('New section added');
+    
+    // Should not contain old content
+    expect(updatedWindsurfRules).not.toContain('Initial content');
+    expect(updatedCursorRules).not.toContain('Initial content');
+
+    // Should still contain TODO-AI.md content
+    expect(updatedWindsurfRules).toContain('AI Workspace');
+    expect(updatedCursorRules).toContain('AI Workspace');
+  });
 });
