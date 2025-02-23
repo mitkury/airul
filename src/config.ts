@@ -24,11 +24,12 @@ export async function loadConfig(configPath?: string): Promise<AirulConfig> {
 
   const config = result.config;
   
-  // Merge with defaults, but prioritize config file's sources
+  // Only use default config if no config file exists
   return {
     ...defaultConfig,
     ...config,
-    sources: config.sources || defaultConfig.sources, // Prioritize config file's sources
+    // Don't merge sources with defaults, use config sources exclusively
+    sources: config.sources,
     output: {
       ...defaultConfig.output,
       ...(config.output || {})

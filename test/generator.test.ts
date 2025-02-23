@@ -30,6 +30,16 @@ describe('generator', () => {
     // Initialize project first
     await initProject(testDir);
 
+    // Update config to use our test file
+    const configPath = join(testDir, '.airul.json');
+    await writeFile(configPath, JSON.stringify({
+      sources: ['test-rules.md'],
+      output: {
+        windsurf: true,
+        cursor: true
+      }
+    }));
+
     // Generate rules
     const result = await generateRules({
       baseDir: testDir,
@@ -468,5 +478,47 @@ describe('generator', () => {
     expect(fileStatuses.has('README.md')).toBe(true);
     expect(fileStatuses.get('README.md')?.included).toBe(true);
     expect(fileStatuses.has('TODO-AI.md')).toBe(false);
+  });
+
+  it('should respect sources from config without merging with defaults', async () => {
+    // Initialize project first
+    await initProject(testDir);
+
+    // Create test files
+    const readmeContent = '# Test Project\nThis is a test README';
+    await writeFile(join(testDir, 'README.md'), readmeContent);
+
+    // Update config to only include README.md
+    const configPath = join(testDir, '.airul.json');
+    const config = {
+      sources: ['README.md'], // Only README.md, no TODO-AI.md
+      output: {
+        cursor: true,
+        windsurf: true
+      }
+    };
+    await writeFile(configPath, JSON.stringify(config, null, 2));
+
+    // Generate rules without specifying sources
+    const result = await generateRules({
+      baseDir: testDir,
+      output: { cursor: true }
+    });
+
+    expect(result.success).toBe(true);
+
+    // Verify rules were generated
+    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    expect(cursorRules).toContain('Test Project');
+
+    // Verify status only shows README.md
+    const fileStatuses = result.fileStatuses;
+    expect(fileStatuses.size).toBe(1);
+    expect(fileStatuses.has('README.md')).toBe(true);
+    expect(fileStatuses.get('README.md')?.included).toBe(true);
+    expect(fileStatuses.has('TODO-AI.md')).toBe(false);
+
+    // Verify content doesn't include TODO-AI.md
+    expect(cursorRules).not.toContain('AI Workspace');
   });
 });

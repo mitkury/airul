@@ -4,9 +4,9 @@ import { glob } from 'glob';
 import { AirulConfig, GenerateOptions } from './types';
 import { dirname } from 'path';
 import { Config } from 'cosmiconfig';
-import console from 'console';
 import { initProject } from './init';
 import { prompts } from './prompts';
+import { loadConfig } from './config';
 
 async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
   const seen = new Set<string>();
@@ -23,14 +23,16 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
           seen.add(normalized);
           result.push(normalized);
         }
-        continue;
-      } catch (error) { }
+      } catch (error: any) {
+        // File not found directly, try glob
+      }
 
       // Try glob pattern
       const matches = await glob(pattern, {
         cwd: baseDir,
         absolute: false,
-        nodir: true
+        nodir: true,
+        dot: true
       });
 
       for (const file of matches) {
@@ -68,8 +70,12 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     config = JSON.parse(configContent) as AirulConfig;
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      // Initialize project if config doesn't exist
-      const result = await initProject(baseDir);
+      // Project not initialized - run init first
+      const initResult = await initProject(baseDir);
+      if (!initResult.configCreated) {
+        throw new Error('Failed to initialize project');
+      }
+      // Load the newly created config
       const configContent = await fs.readFile(configPath, 'utf8');
       config = JSON.parse(configContent) as AirulConfig;
     } else {
@@ -81,7 +87,7 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   const mergedConfig: AirulConfig = {
     ...config,
     // If sources are provided in options, use them exclusively
-    sources: options.sources ? [...options.sources] : [...config.sources],
+    sources: options.sources ? [...options.sources] : config.sources,
     output: options.output ? {
       ...config.output,
       ...options.output
@@ -89,13 +95,20 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     template: options.template || config.template || {}
   };
 
-  // Track only the files from user's config
+  // Initialize status tracking for original source patterns
   for (const source of mergedConfig.sources) {
     fileStatuses.set(source, { included: false });
   }
 
   // Expand glob patterns and deduplicate while preserving order
   const files = await expandAndDeduplicate(mergedConfig.sources, baseDir);
+
+  // Update status tracking to include files found during glob expansion
+  for (const file of files) {
+    if (!fileStatuses.has(file)) {
+      fileStatuses.set(file, { included: false });
+    }
+  }
 
   if (files.length === 0) {
     console.warn(prompts.noSourcesFound);
@@ -164,14 +177,6 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   }
 
   await Promise.all(writePromises);
-
-  // Print summary
-  console.log('\nFile status summary:');
-  for (const [file, status] of fileStatuses.entries()) {
-    const symbol = status.included ? '✓' : '✗';
-    const message = status.error ? ` (${status.error})` : '';
-    console.log(`${symbol} ${file}${message}`);
-  }
 
   return { success: writePromises.length > 0, fileStatuses };
 }

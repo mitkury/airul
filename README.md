@@ -21,6 +21,21 @@ airul new my-project "Create a React app with authentication" --cursor
 # 5. Open in Cursor (and other editors if specified)
 ```
 
+### Core Commands
+
+#### `airul init`
+Initializes a new project:
+- Creates `.airul.json` config if it doesn't exist
+- Creates initial `TODO-AI.md` if it doesn't exist
+- Generates rules from the new configuration
+- Initializes git repository (if not already initialized)
+
+#### `airul gen`
+Generates AI context files:
+- If `.airul.json` exists: generates rules using the existing configuration
+- If `.airul.json` doesn't exist: runs `init` first, then generates rules
+- Always uses the most recent content from your source files
+
 ### Adding to existing project
 
 ```bash

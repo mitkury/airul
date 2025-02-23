@@ -65,7 +65,8 @@ describe('init command', () => {
       output: { windsurf: false, cursor: true },
       baseDir: TEST_DIRS.INIT
     });
-    expect(result2).toBe(true);
+    expect(result2.success).toBe(true);
+    expect(result2.fileStatuses.get('TODO-AI.md')?.included).toBe(true);
     
     // Verify cursor rules file was created (windsurf should not be)
     const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
