@@ -9,7 +9,8 @@ export const TEST_DIRS = {
   INIT: join(TEST_ROOT, 'init'),
   NEW: join(TEST_ROOT, 'new'),
   BUILD: join(TEST_ROOT, 'build'),
-  GENERATOR: join(TEST_ROOT, 'generator')
+  GENERATOR: join(TEST_ROOT, 'generator'),
+  WORKFLOW: join(TEST_ROOT, 'workflow')
 } as const;
 
 // Sample package.json content

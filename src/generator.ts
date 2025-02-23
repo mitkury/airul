@@ -83,27 +83,32 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     }
   }
 
-  // Merge provided options with config from file
+  // Merge configurations with proper precedence
   const mergedConfig: AirulConfig = {
     ...config,
-    // If sources are provided in options, use them exclusively
-    sources: options.sources ? [...options.sources] : config.sources,
-    output: options.output ? {
+    sources: options.sources || config.sources || [],
+    output: {
       ...config.output,
-      ...options.output
-    } : config.output,
-    template: options.template || config.template || {}
+      ...(options.output || {})
+    },
+    template: {
+      ...config.template,
+      ...(options.template || {})
+    }
   };
 
-  // Initialize status tracking for original source patterns
-  for (const source of mergedConfig.sources) {
-    fileStatuses.set(source, { included: false });
-  }
+  // Track original source patterns before expansion
+  const originalPatterns = new Set(mergedConfig.sources);
 
   // Expand glob patterns and deduplicate while preserving order
   const files = await expandAndDeduplicate(mergedConfig.sources, baseDir);
 
-  // Update status tracking to include files found during glob expansion
+  // Initialize status tracking for all patterns and found files
+  for (const pattern of originalPatterns) {
+    fileStatuses.set(pattern, { included: false });
+  }
+
+  // Update status for found files
   for (const file of files) {
     if (!fileStatuses.has(file)) {
       fileStatuses.set(file, { included: false });
@@ -122,16 +127,21 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
         const filePath = path.isAbsolute(file) ? file : path.join(baseDir, file);
         const content = await fs.readFile(filePath, 'utf8');
         const trimmed = content.trim();
+        
         if (!trimmed) {
           fileStatuses.set(file, { included: false, error: 'file is empty' });
           console.warn(prompts.emptyFileWarning(file));
           return '';
         }
-        const fileHeader = mergedConfig.template?.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
+
+        // Update status for successfully read files
         fileStatuses.set(file, { included: true });
+        
+        // Add file header if configured
+        const fileHeader = mergedConfig.template?.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
         return `${fileHeader}\n\n${trimmed}`;
       } catch (error: any) {
-        fileStatuses.set(file, { included: false, error: 'couldn\'t find the file' });
+        fileStatuses.set(file, { included: false, error: error.message });
         console.warn(prompts.fileReadError(file, error.message));
         return '';
       }
@@ -153,6 +163,14 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   // Write output files based on configuration
   const writePromises: Promise<void>[] = [];
 
+  // Check if any output is enabled
+  const hasEnabledOutput = Object.values(mergedConfig.output).some(value => value);
+  if (!hasEnabledOutput) {
+    console.warn('No output formats are enabled in configuration');
+    return { success: false, fileStatuses };
+  }
+
+  // Write enabled outputs
   if (mergedConfig.output.windsurf) {
     writePromises.push(fs.writeFile(path.join(baseDir, '.windsurfrules'), fullContent));
   }
@@ -166,19 +184,42 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   }
 
   if (mergedConfig.output.copilot) {
-    // Create .github directory if it doesn't exist
     const githubDir = path.join(baseDir, '.github');
     await fs.mkdir(githubDir, { recursive: true });
     writePromises.push(fs.writeFile(path.join(githubDir, 'copilot-instructions.md'), fullContent));
   }
 
   if (mergedConfig.output.customPath) {
+    const customDir = path.dirname(path.join(baseDir, mergedConfig.output.customPath));
+    await fs.mkdir(customDir, { recursive: true });
     writePromises.push(fs.writeFile(path.join(baseDir, mergedConfig.output.customPath), fullContent));
   }
 
-  await Promise.all(writePromises);
-
-  return { success: writePromises.length > 0, fileStatuses };
+  try {
+    await Promise.all(writePromises);
+    
+    // Display summary of processed files
+    console.log('\nFile processing summary:');
+    for (const [file, status] of fileStatuses) {
+      const mark = status.included ? '✓' : '✗';
+      const errorMsg = status.error ? ` (${status.error})` : '';
+      console.log(`${mark} ${file}${errorMsg}`);
+    }
+    
+    return { success: true, fileStatuses };
+  } catch (error) {
+    console.error('Error writing output files:', error);
+    
+    // Still show summary even if writing failed
+    console.log('\nFile processing summary:');
+    for (const [file, status] of fileStatuses) {
+      const mark = status.included ? '✓' : '✗';
+      const errorMsg = status.error ? ` (${status.error})` : '';
+      console.log(`${mark} ${file}${errorMsg}`);
+    }
+    
+    return { success: false, fileStatuses };
+  }
 }
 
 export async function generate(config: Config) {
