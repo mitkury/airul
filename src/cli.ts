@@ -142,18 +142,37 @@ program
       }
       
       const editorOptions = getEditorOptions(options);
+
+      // Only override config output values that are explicitly set in editorOptions
+      const mergedOutput = {
+        ...config.output,
+        ...(editorOptions.cursor !== undefined ? { cursor: editorOptions.cursor } : {}),
+        ...(editorOptions.windsurf !== undefined ? { windsurf: editorOptions.windsurf } : {}),
+        ...(editorOptions.copilot !== undefined ? { copilot: editorOptions.copilot } : {}),
+        ...(editorOptions.cline !== undefined ? { cline: editorOptions.cline } : {}),
+        ...(options.customOutput ? { customPath: options.customOutput } : {})
+      };
+
       const generateOptions: AirulConfig = {
         ...config,
         sources: options.sources || config.sources,
-        output: {
-          ...config.output,
-          ...editorOptions,
-          customPath: options.customOutput || config.output.customPath
-        }
+        output: mergedOutput
       };
 
-      await generateRules(generateOptions);
-      console.log('Successfully generated AI rules');
+      const result = await generateRules(generateOptions);
+      
+      // Display file processing summary
+      console.log('\nFile processing summary:');
+      for (const [file, included] of result.processedFiles) {
+        const mark = included ? '✓' : '✗';
+        console.log(`${mark} ${file}`);
+      }
+
+      if (result.success) {
+        console.log('\nSuccessfully generated AI rules');
+      } else {
+        console.warn('\nNo rules were generated. Check your .airul.json output configuration.');
+      }
     } catch (error) {
       console.error('Error generating rules:', error);
       process.exit(1);

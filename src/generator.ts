@@ -8,57 +8,73 @@ import { initProject } from './init';
 import { prompts } from './prompts';
 import { loadConfig } from './config';
 
-async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<string[]> {
+async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<{ files: string[], fileStatuses: Map<string, { included: boolean, error?: string }> }> {
   const seen = new Set<string>();
   const result: string[] = [];
+  const fileStatuses = new Map<string, { included: boolean, error?: string }>();
 
   for (const pattern of sources) {
     try {
-      // First try to find the file directly
-      const filePath = path.isAbsolute(pattern) ? pattern : path.join(baseDir, pattern);
-      try {
-        await fs.access(filePath);
-        const normalized = path.normalize(pattern);
-        if (!seen.has(normalized)) {
-          seen.add(normalized);
-          result.push(normalized);
-        }
-      } catch (error: any) {
-        // File not found directly, try glob
-      }
-
-      // Try glob pattern
-      const matches = await glob(pattern, {
+      // Normalize the pattern to use forward slashes
+      const normalizedPattern = pattern.replace(/\\/g, '/');
+      
+      // Use glob with relative pattern and cwd option
+      const matches = await glob(normalizedPattern, {
         cwd: baseDir,
-        absolute: false,
         nodir: true,
-        dot: true
+        dot: true,
+        follow: true,
+        absolute: false // Keep paths relative to cwd
       });
+      
+      if (matches.length === 0) {
+        fileStatuses.set(pattern, { included: false, error: 'No matching files found' });
+        continue;
+      }
 
+      // Add matched files (they're already relative to baseDir)
       for (const file of matches) {
-        const normalized = path.normalize(file);
+        const normalized = file.replace(/\\/g, '/');
         if (!seen.has(normalized)) {
           seen.add(normalized);
           result.push(normalized);
+          fileStatuses.set(normalized, { included: true });
         }
       }
+
+      // Mark the pattern as included if it matched any files
+      fileStatuses.set(pattern, { included: true });
     } catch (error) {
-      console.warn(prompts.invalidGlobWarning(pattern, error));
+      const errorMessage = error instanceof Error ? error.message : 'unknown error';
+      fileStatuses.set(pattern, { included: false, error: errorMessage });
     }
   }
 
-  return result;
+  // Sort files for consistent output
+  const sortedFiles = result.sort((a, b) => a.localeCompare(b));
+
+  // Display file processing summary
+  console.log('\nFile processing summary:');
+  const allFiles = new Set([...result, ...sources]);
+  for (const file of Array.from(allFiles).sort()) {
+    const status = fileStatuses.get(file);
+    if (status) {
+      const mark = status.included ? '✓' : '✗';
+      console.log(`${mark} ${file}${status.error ? ` (${status.error})` : ''}`);
+    }
+  }
+
+  return { files: sortedFiles, fileStatuses };
 }
 
 export interface GenerateResult {
   success: boolean;
-  fileStatuses: Map<string, { included: boolean, error?: string }>;
+  processedFiles: Map<string, boolean>; // file path -> was included
 }
 
 export async function generateRules(options: GenerateOptions): Promise<GenerateResult> {
   const baseDir = options.baseDir || process.cwd();
-  const fileStatuses = new Map<string, { included: boolean, error?: string }>();
-
+  
   // Ensure base directory exists
   await fs.mkdir(baseDir, { recursive: true });
 
@@ -97,27 +113,18 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     }
   };
 
-  // Track original source patterns before expansion
-  const originalPatterns = new Set(mergedConfig.sources);
-
   // Expand glob patterns and deduplicate while preserving order
-  const files = await expandAndDeduplicate(mergedConfig.sources, baseDir);
-
-  // Initialize status tracking for all patterns and found files
-  for (const pattern of originalPatterns) {
-    fileStatuses.set(pattern, { included: false });
-  }
-
-  // Update status for found files
-  for (const file of files) {
-    if (!fileStatuses.has(file)) {
-      fileStatuses.set(file, { included: false });
-    }
-  }
+  const { files, fileStatuses } = await expandAndDeduplicate(mergedConfig.sources, baseDir);
 
   if (files.length === 0) {
     console.warn(prompts.noSourcesFound);
-    return { success: false, fileStatuses };
+    return { success: false, processedFiles: new Map() };
+  }
+
+  // Convert fileStatuses to processedFiles
+  const processedFiles = new Map<string, boolean>();
+  for (const [file, status] of fileStatuses) {
+    processedFiles.set(file, status.included);
   }
 
   // Read and format content from each file
@@ -129,19 +136,19 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
         const trimmed = content.trim();
         
         if (!trimmed) {
-          fileStatuses.set(file, { included: false, error: 'file is empty' });
+          processedFiles.set(file, false);
           console.warn(prompts.emptyFileWarning(file));
           return '';
         }
 
         // Update status for successfully read files
-        fileStatuses.set(file, { included: true });
+        processedFiles.set(file, true);
         
         // Add file header if configured
         const fileHeader = mergedConfig.template?.fileHeader?.replace('{fileName}', file) || `# From ${file}:`;
         return `${fileHeader}\n\n${trimmed}`;
       } catch (error: any) {
-        fileStatuses.set(file, { included: false, error: error.message });
+        processedFiles.set(file, false);
         console.warn(prompts.fileReadError(file, error.message));
         return '';
       }
@@ -152,7 +159,7 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   const validContents = contents.filter(Boolean);
 
   if (validContents.length === 0) {
-    return { success: false, fileStatuses };
+    return { success: false, processedFiles };
   }
 
   // Add intro context and join contents with separator
@@ -167,7 +174,7 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   const hasEnabledOutput = Object.values(mergedConfig.output).some(value => value);
   if (!hasEnabledOutput) {
     console.warn('No output formats are enabled in configuration');
-    return { success: false, fileStatuses };
+    return { success: false, processedFiles };
   }
 
   // Write enabled outputs
@@ -195,31 +202,11 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     writePromises.push(fs.writeFile(path.join(baseDir, mergedConfig.output.customPath), fullContent));
   }
 
-  try {
-    await Promise.all(writePromises);
-    
-    // Display summary of processed files
-    console.log('\nFile processing summary:');
-    for (const [file, status] of fileStatuses) {
-      const mark = status.included ? '✓' : '✗';
-      const errorMsg = status.error ? ` (${status.error})` : '';
-      console.log(`${mark} ${file}${errorMsg}`);
-    }
-    
-    return { success: true, fileStatuses };
-  } catch (error) {
-    console.error('Error writing output files:', error);
-    
-    // Still show summary even if writing failed
-    console.log('\nFile processing summary:');
-    for (const [file, status] of fileStatuses) {
-      const mark = status.included ? '✓' : '✗';
-      const errorMsg = status.error ? ` (${status.error})` : '';
-      console.log(`${mark} ${file}${errorMsg}`);
-    }
-    
-    return { success: false, fileStatuses };
-  }
+  // Wait for all writes to complete
+  await Promise.all(writePromises);
+
+  console.log('Successfully generated AI rules');
+  return { success: true, processedFiles };
 }
 
 export async function generate(config: Config) {
@@ -230,13 +217,54 @@ export async function generate(config: Config) {
       baseDir: process.cwd()
     });
 
+    // Display file processing summary
+    console.log('\nFile processing summary:');
+    const sortedFiles = Array.from(result.processedFiles.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [file, included] of sortedFiles) {
+      const mark = included ? '✓' : '✗';
+      console.log(`${mark} ${file}`);
+    }
+
     if (result.success) {
-      console.log('Successfully generated AI rules');
+      console.log('\nSuccessfully generated AI rules');
     } else {
-      console.warn('No rules were generated. Check your .airul.json output configuration.');
+      console.warn('\nNo rules were generated. Check your .airul.json output configuration.');
     }
   } catch (error) {
     console.error('Error generating rules:', error);
     process.exit(1);
   }
+}
+
+async function findFiles(patterns: string[], baseDir: string): Promise<string[]> {
+  const files = new Set<string>();
+  
+  for (const pattern of patterns) {
+    try {
+      // Normalize the pattern to use forward slashes
+      const normalizedPattern = pattern.replace(/\\/g, '/');
+      
+      // Resolve the pattern relative to baseDir if it's not already absolute
+      const resolvedPattern = path.isAbsolute(normalizedPattern) 
+        ? normalizedPattern 
+        : path.join(baseDir, normalizedPattern);
+      
+      const matches = await glob(resolvedPattern, {
+        nodir: true,
+        dot: true,
+        follow: true // Follow symlinks
+      });
+      
+      // Convert absolute paths back to relative paths
+      matches.forEach(file => {
+        const relativePath = path.relative(baseDir, file);
+        files.add(path.normalize(relativePath));
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'unknown error';
+      console.warn(`Invalid glob pattern "${pattern}": ${errorMessage}`);
+    }
+  }
+  
+  return Array.from(files).sort();
 }

@@ -60,13 +60,9 @@ describe('init command', () => {
     await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), '# Test Project\n\nThis is a test.');
     
     // Generate rules again
-    const result2 = await generateRules({
-      sources: ['TODO-AI.md'],
-      output: { windsurf: false, cursor: true },
-      baseDir: TEST_DIRS.INIT
-    });
+    const result2 = await generateRules({ baseDir: TEST_DIRS.INIT });
     expect(result2.success).toBe(true);
-    expect(result2.fileStatuses.get('TODO-AI.md')?.included).toBe(true);
+    expect(result2.processedFiles.get('TODO-AI.md')).toBe(true);
     
     // Verify cursor rules file was created (windsurf should not be)
     const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');

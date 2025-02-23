@@ -473,11 +473,11 @@ describe('generator', () => {
     expect(cursorRules).toContain('Test Project');
 
     // Verify status only shows README.md
-    const fileStatuses = result.fileStatuses;
-    expect(fileStatuses.size).toBe(1);
-    expect(fileStatuses.has('README.md')).toBe(true);
-    expect(fileStatuses.get('README.md')?.included).toBe(true);
-    expect(fileStatuses.has('TODO-AI.md')).toBe(false);
+    const processedFiles = result.processedFiles;
+    expect(processedFiles.size).toBe(1);
+    expect(processedFiles.has('README.md')).toBe(true);
+    expect(processedFiles.get('README.md')).toBe(true);
+    expect(processedFiles.has('TODO-AI.md')).toBe(false);
   });
 
   it('should respect sources from config without merging with defaults', async () => {
@@ -512,11 +512,11 @@ describe('generator', () => {
     expect(cursorRules).toContain('Test Project');
 
     // Verify status only shows README.md
-    const fileStatuses = result.fileStatuses;
-    expect(fileStatuses.size).toBe(1);
-    expect(fileStatuses.has('README.md')).toBe(true);
-    expect(fileStatuses.get('README.md')?.included).toBe(true);
-    expect(fileStatuses.has('TODO-AI.md')).toBe(false);
+    const processedFiles = result.processedFiles;
+    expect(processedFiles.size).toBe(1);
+    expect(processedFiles.has('README.md')).toBe(true);
+    expect(processedFiles.get('README.md')).toBe(true);
+    expect(processedFiles.has('TODO-AI.md')).toBe(false);
 
     // Verify content doesn't include TODO-AI.md
     expect(cursorRules).not.toContain('AI Workspace');

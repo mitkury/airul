@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc && chmod +x dist/cli.js",
-    "test": "npm run build && NODE_ENV=test jest",
+    "test": "npm run build && NODE_OPTIONS=--no-inspect NODE_ENV=test jest",
     "test:watch": "npm run build && NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
     "test:cleanup": "rm -rf test/__test_outputs__",

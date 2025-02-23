@@ -1,13 +1,12 @@
 import { GenerateOptions } from './types';
 import { loadConfig } from './config';
-import { generateRules as generate } from './generator';
+import { generateRules as generate, GenerateResult } from './generator';
 
 /**
  * Generate rules from documentation files
  */
-export async function generateRules(options: GenerateOptions): Promise<boolean> {
-  const result = await generate(options);
-  return result.success;
+export async function generateRules(options: GenerateOptions): Promise<GenerateResult> {
+  return await generate(options);
 }
 
 export { loadConfig };
