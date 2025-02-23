@@ -125,10 +125,11 @@ export async function initProject(
   // Always try to generate rules, whether project is new or existing
   let rulesGenerated = false;
   try {
-    rulesGenerated = await generateRules({
+    const result = await generateRules({
       ...config,
       baseDir: cwd
     });
+    rulesGenerated = result.success;
   } catch (error) {
     // Don't fail initialization if rules generation fails
     console.warn(prompts.rulesGenerationSkipped);

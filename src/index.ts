@@ -6,7 +6,8 @@ import { generateRules as generate } from './generator';
  * Generate rules from documentation files
  */
 export async function generateRules(options: GenerateOptions): Promise<boolean> {
-  return generate(options);
+  const result = await generate(options);
+  return result.success;
 }
 
 export { loadConfig };

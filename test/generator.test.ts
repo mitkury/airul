@@ -41,7 +41,7 @@ describe('generator', () => {
       }
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify output files
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
@@ -68,7 +68,7 @@ describe('generator', () => {
       output: { cursor: true }
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify .airul.json was created
     const configPath = join(testDir, '.airul.json');
@@ -109,7 +109,7 @@ describe('generator', () => {
       }
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify Copilot instructions were created
     const copilotInstructions = await readFile(join(testDir, '.github', 'copilot-instructions.md'), 'utf8');
@@ -148,7 +148,7 @@ describe('generator', () => {
       sources: ['test-rules.md']
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify only cursor rules were created
     const cursorRulesExists = await fs.access(join(testDir, '.cursorrules'))
@@ -190,7 +190,7 @@ describe('generator', () => {
       }
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify only windsurf rules were created
     const cursorRulesExists = await fs.access(join(testDir, '.cursorrules'))
@@ -253,9 +253,9 @@ describe('generator', () => {
         sources: ['test-rules.md'],
         output: getEditorOptions(options)
       });
-      console.log('Generate result:', result);
+      console.log('Generate result:', result.success);
 
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
 
       // Verify only copilot instructions were created
       const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
@@ -316,7 +316,7 @@ describe('generator', () => {
       ...config
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify output files exist and contain content from both sources
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
@@ -359,7 +359,7 @@ describe('generator', () => {
       ...config
     });
 
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
 
     // Verify files were generated with available content
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
@@ -397,10 +397,12 @@ describe('generator', () => {
     await writeFile(join(testDir, '.airul.json'), JSON.stringify(config, null, 2));
 
     // Generate rules first time
-    await generateRules({
+    const result1 = await generateRules({
       baseDir: testDir,
       ...config
     });
+
+    expect(result1.success).toBe(true);
 
     // Verify initial content
     const initialWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
@@ -413,10 +415,12 @@ describe('generator', () => {
     await writeFile(join(testDir, 'README.md'), updatedContent);
 
     // Generate rules again
-    await generateRules({
+    const result2 = await generateRules({
       baseDir: testDir,
       ...config
     });
+
+    expect(result2.success).toBe(true);
 
     // Verify content was updated
     const updatedWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
@@ -435,5 +439,34 @@ describe('generator', () => {
     // Should still contain TODO-AI.md content
     expect(updatedWindsurfRules).toContain('AI Workspace');
     expect(updatedCursorRules).toContain('AI Workspace');
+  });
+
+  it('should only show user-specified sources in status', async () => {
+    // Initialize project first (which creates TODO-AI.md)
+    await initProject(testDir);
+
+    // Create test files
+    const readmeContent = '# Test Project\nThis is a test README';
+    await writeFile(join(testDir, 'README.md'), readmeContent);
+
+    // Generate rules with specific sources
+    const result = await generateRules({
+      baseDir: testDir,
+      sources: ['README.md'], // Only specify README.md
+      output: { cursor: true }
+    });
+
+    expect(result.success).toBe(true);
+
+    // Verify rules were generated
+    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    expect(cursorRules).toContain('Test Project');
+
+    // Verify status only shows README.md
+    const fileStatuses = result.fileStatuses;
+    expect(fileStatuses.size).toBe(1);
+    expect(fileStatuses.has('README.md')).toBe(true);
+    expect(fileStatuses.get('README.md')?.included).toBe(true);
+    expect(fileStatuses.has('TODO-AI.md')).toBe(false);
   });
 });

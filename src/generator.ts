@@ -48,14 +48,19 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
   return result;
 }
 
-export async function generateRules(options: GenerateOptions): Promise<boolean> {
+export interface GenerateResult {
+  success: boolean;
+  fileStatuses: Map<string, { included: boolean, error?: string }>;
+}
+
+export async function generateRules(options: GenerateOptions): Promise<GenerateResult> {
   const baseDir = options.baseDir || process.cwd();
   const fileStatuses = new Map<string, { included: boolean, error?: string }>();
 
   // Ensure base directory exists
   await fs.mkdir(baseDir, { recursive: true });
 
-  // Check if project needs initialization
+  // Check if project has configuration
   const configPath = path.join(baseDir, '.airul.json');
   let config: AirulConfig;
   try {
@@ -75,7 +80,8 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   // Merge provided options with config from file
   const mergedConfig: AirulConfig = {
     ...config,
-    sources: options.sources || config.sources,
+    // If sources are provided in options, use them exclusively
+    sources: options.sources ? [...options.sources] : [...config.sources],
     output: options.output ? {
       ...config.output,
       ...options.output
@@ -83,7 +89,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
     template: options.template || config.template || {}
   };
 
-  // Track all source files before expansion
+  // Track only the files from user's config
   for (const source of mergedConfig.sources) {
     fileStatuses.set(source, { included: false });
   }
@@ -93,7 +99,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
 
   if (files.length === 0) {
     console.warn(prompts.noSourcesFound);
-    return false;
+    return { success: false, fileStatuses };
   }
 
   // Read and format content from each file
@@ -123,7 +129,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
   const validContents = contents.filter(Boolean);
 
   if (validContents.length === 0) {
-    return false;
+    return { success: false, fileStatuses };
   }
 
   // Add intro context and join contents with separator
@@ -167,7 +173,7 @@ export async function generateRules(options: GenerateOptions): Promise<boolean> 
     console.log(`${symbol} ${file}${message}`);
   }
 
-  return writePromises.length > 0;
+  return { success: writePromises.length > 0, fileStatuses };
 }
 
 export async function generate(config: Config) {
@@ -178,7 +184,7 @@ export async function generate(config: Config) {
       baseDir: process.cwd()
     });
 
-    if (result) {
+    if (result.success) {
       console.log('Successfully generated AI rules');
     } else {
       console.warn('No rules were generated. Check your .airul.json output configuration.');
