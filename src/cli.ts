@@ -83,6 +83,9 @@ program
       );
       console.log('✨ Airul initialized successfully!');
       console.log('- Created .airul.json with default configuration');
+      if (result.configUpdated) {
+        console.log('- Updated configuration with editor options');
+      }
       if (result.gitInitialized) {
         console.log('- Initialized git repository');
       } else if (result.gitExists) {

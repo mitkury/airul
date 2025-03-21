@@ -54,44 +54,84 @@ airul init
 
 ### Keeping context updated
 
-After making changes to your project, you have two options to update the AI context:
+After making changes to your project, you have these options to update the AI context:
 
-#### Option 1: NPM Scripts (Recommended)
-Add airul to your package.json:
+```bash
+# Run this after making changes to your documentation
+airul gen
+```
+
+You can run this command directly if you installed Airul globally, or use `npx airul gen` if installed as a dev dependency.
+
+For automatic updates, add this to your package.json:
 ```json
 {
   "devDependencies": {
     "airul": "latest"
   },
   "scripts": {
-    "rules": "airul gen",
     "prestart": "airul gen",
     "prebuild": "airul gen"
   }
 }
 ```
 
-Then run:
-```bash
-# Manual update
-npm run rules
+This way, your AI context will always be updated before running or building your project.
 
-# Automatic update before npm start/build
-npm start
-npm run build
-```
-
-#### Option 2: CLI Command
-If installed globally:
-```bash
-# Update AI context manually
-airul gen
-```
-
-Both approaches will update context when you:
+All approaches will update context when you:
 - Add/modify documentation
 - Install new dependencies
 - Change project structure
+
+## Supported Editors
+
+Airul supports multiple AI-powered editors. You can enable them during initialization or in existing projects:
+
+| Editor | Output File | Flag to Enable | Configuration |
+|--------|-------------|----------------|--------------|
+| Cursor | `.cursorrules` | `--cursor` | `"cursor": true` |
+| GitHub Copilot | `.github/copilot-instructions.md` | `--copilot` | `"copilot": true` |
+| Windsurf | `.windsurfrules` | `--windsurf` | `"windsurf": true` |
+| Claude | `CLAUDE.md` | `--claude` | `"claude": true` |
+| Cline | `.clinerules` | `--cline` | `"cline": true` |
+
+**Example: Enabling editors during initialization:**
+```bash
+# Enable Cursor and Claude
+airul init --cursor --claude
+
+# Enable all editors
+airul init --cursor --copilot --windsurf --claude --cline
+```
+
+**Example: Enabling editors in an existing project:**
+```bash
+# Add Claude support to an existing project
+airul init --claude
+# OR
+airul gen --claude
+
+# Enable multiple editors at once
+airul init --cursor --copilot --claude
+# OR
+airul gen --cursor --copilot --claude
+```
+
+You can use either `airul init` or `airul gen` with editor flags to enable editors in an existing project. Both commands will update your configuration.
+
+**Example: Configuration in `.airul.json`:**
+```json
+{
+  "sources": ["README.md", "docs/*.md"],
+  "output": {
+    "cursor": true,
+    "copilot": true,
+    "windsurf": false,
+    "claude": true,
+    "cline": false
+  }
+}
+```
 
 ## Features
 
@@ -99,32 +139,10 @@ Both approaches will update context when you:
   - GitHub Copilot (.github/copilot-instructions.md)
   - Cursor (.cursorrules)
   - Windsurf (.windsurfrules)
+  - Claude (CLAUDE.md)
+  - Cline VSCode Extension (.clinerules)
 - 📝 Works with any text files (markdown, txt, etc.)
 - ⚙️ Simple configuration
-
-## Example
-
-Create `.airul.json`:
-```json
-{
-  "sources": ["README.md", "docs/*.md", "*.txt"],
-  "output": {
-    "cursor": true,    /* enabled by default only when no other editors are specified */
-    "windsurf": false, /* disabled by default */
-    "copilot": false   /* disabled by default */
-  }
-}
-```
-
-Run:
-```bash
-npm run rules
-```
-
-This will:
-1. Scan your documentation files
-2. Generate AI context files based on your output settings
-3. Format the content appropriately for each tool
 
 ## License
 

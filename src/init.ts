@@ -28,10 +28,11 @@ export interface EditorOptions {
   claude?: boolean;
 }
 
-interface InitResult {
+export interface InitResult {
+  alreadyInitialized: boolean;
   configCreated: boolean;
+  configUpdated?: boolean;
   taskCreated?: boolean;
-  alreadyInitialized?: boolean;
   rulesGenerated?: boolean;
   gitInitialized?: boolean;
   gitExists?: boolean;
@@ -47,6 +48,7 @@ export async function initProject(
   const configPath = path.join(cwd, '.airul.json');
   let config;
   let configCreated = false;
+  let configUpdated = false;
   let gitInitialized = false;
   let gitExists = false;
   
@@ -55,6 +57,33 @@ export async function initProject(
     // Project is already initialized, load existing config
     const configContent = await fs.readFile(configPath, 'utf8');
     config = JSON.parse(configContent);
+    
+    // Check if any editor options were explicitly provided (not undefined)
+    const hasExplicitEditorOptions = 
+      editorOptions.cursor !== undefined ||
+      editorOptions.windsurf !== undefined ||
+      editorOptions.copilot !== undefined ||
+      editorOptions.cline !== undefined ||
+      editorOptions.claude !== undefined;
+    
+    if (hasExplicitEditorOptions) {
+      // Update existing config with provided editor options
+      config.output = {
+        ...config.output,
+        ...(editorOptions.cursor !== undefined ? { cursor: Boolean(editorOptions.cursor) } : {}),
+        ...(editorOptions.windsurf !== undefined ? { windsurf: Boolean(editorOptions.windsurf) } : {}),
+        ...(editorOptions.copilot !== undefined ? { copilot: Boolean(editorOptions.copilot) } : {}),
+        ...(editorOptions.cline !== undefined ? { cline: Boolean(editorOptions.cline) } : {}),
+        ...(editorOptions.claude !== undefined ? { claude: Boolean(editorOptions.claude) } : {})
+      };
+      
+      // Write updated config back to file
+      await fs.writeFile(
+        configPath,
+        JSON.stringify(config, null, 2)
+      );
+      configUpdated = true;
+    }
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // Initialize git if not already initialized
@@ -141,6 +170,7 @@ export async function initProject(
 
   return {
     configCreated,
+    configUpdated,
     taskCreated,
     rulesGenerated,
     gitInitialized: configCreated && gitInitialized,
