@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
 import { TEST_DIRS } from './constants';
 import { cleanupTestDir, createDir } from './utils';
@@ -106,9 +106,15 @@ describe('init command', () => {
   });
 
   it('should generate correct rule files based on editor options', async () => {
-    // First create a TODO-AI.md file to ensure we have content
     const todoContent = '# Test Project\n\nThis is a test.';
     await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
+
+    // Delete any existing .airul.json file to ensure a fresh test
+    try {
+      await unlink(join(TEST_DIRS.INIT, '.airul.json'));
+    } catch (error) {
+      // Ignore errors if file doesn't exist
+    }
 
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: true,
@@ -152,6 +158,13 @@ describe('init command', () => {
     const todoContent = '# Test Project\n\nThis is a test project with specific conventions.';
     await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
 
+    // Delete any existing .airul.json file to ensure a fresh test
+    try {
+      await unlink(join(TEST_DIRS.INIT, '.airul.json'));
+    } catch (error) {
+      // Ignore errors if file doesn't exist
+    }
+
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: false,
       windsurf: false,
@@ -175,6 +188,13 @@ describe('init command', () => {
     // Create test content
     const todoContent = '# Test Project\n\nThis is a test project with Claude support.';
     await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
+
+    // Delete any existing .airul.json file to ensure a fresh test
+    try {
+      await unlink(join(TEST_DIRS.INIT, '.airul.json'));
+    } catch (error) {
+      // Ignore errors if file doesn't exist
+    }
 
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: false,

@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { TEST_DIRS } from './constants';
 import { cleanupTestDir, createDir } from './utils';
+import * as fs from 'fs/promises';
 
 describe('built package', () => {
   let originalCwd: string;
@@ -34,10 +35,26 @@ describe('built package', () => {
   it('should run airul init using built package', async () => {
     // Run the built CLI
     const cliPath = join(rootDir, 'dist', 'cli.js');
-    execSync(`node ${cliPath} init`, { stdio: 'inherit' });
+    execSync(`node ${cliPath} init`, { 
+      stdio: 'inherit',
+      cwd: TEST_DIRS.INIT  // Explicitly set the working directory
+    });
+
+    // Allow time for file operations to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Verify .airul.json was created
     const configPath = join(TEST_DIRS.INIT, '.airul.json');
+    
+    // Check if file exists before trying to read it
+    try {
+      await fs.access(configPath);
+    } catch (error) {
+      console.log(`File not found at ${configPath}`);
+      console.log(`Directory contents:`, await fs.readdir(TEST_DIRS.INIT));
+      throw error;
+    }
+    
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     expect(config.sources).toContain('README.md');
   });
@@ -48,7 +65,10 @@ describe('built package', () => {
     
     // Run the built CLI
     const cliPath = join(rootDir, 'dist', 'cli.js');
-    execSync(`node ${cliPath} new ${projectName} "Create a test project"`, { stdio: 'inherit' });
+    execSync(`node ${cliPath} new ${projectName} "Create a test project"`, { 
+      stdio: 'inherit',
+      cwd: TEST_DIRS.INIT
+    });
 
     // Verify project was created
     const configPath = join(projectPath, '.airul.json');
@@ -61,7 +81,10 @@ describe('built package', () => {
     
     // Run the built CLI
     const cliPath = join(rootDir, 'dist', 'cli.js');
-    execSync(`node ${cliPath} init "${task}"`, { stdio: 'inherit' });
+    execSync(`node ${cliPath} init "${task}"`, { 
+      stdio: 'inherit',
+      cwd: TEST_DIRS.INIT
+    });
 
     // Verify TODO-AI.md was created with task
     const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
