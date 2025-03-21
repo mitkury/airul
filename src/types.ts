@@ -17,6 +17,7 @@ export interface AirulConfig {
     cursor?: boolean;
     copilot?: boolean;
     cline?: boolean;
+    claude?: boolean;
     customPath?: string;
   };
 
@@ -40,6 +41,7 @@ export interface EditorOptions {
   windsurf?: boolean;
   copilot?: boolean;
   cline?: boolean;
+  claude?: boolean;
 }
 
 export interface GenerateOptions {
@@ -49,6 +51,7 @@ export interface GenerateOptions {
     windsurf?: boolean;
     copilot?: boolean;
     cline?: boolean;
+    claude?: boolean;
     customPath?: string;
   };
   template?: {

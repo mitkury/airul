@@ -6,6 +6,7 @@ export function getEditorOptions(options: any): EditorOptions {
     cursor: options.cursor,
     windsurf: options.windsurf,
     copilot: copilotEnabled === undefined ? undefined : Boolean(copilotEnabled),
-    cline: options.cline
+    cline: options.cline,
+    claude: options.claude
   };
 } 

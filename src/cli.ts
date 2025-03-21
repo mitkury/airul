@@ -72,6 +72,7 @@ program
   .option('--copilot', 'Enable GitHub Copilot output (default: disabled)')
   .option('--code', 'Alias for --copilot')
   .option('--cline', 'Enable Cline VSCode extension output (default: disabled)')
+  .option('--claude', 'Enable Claude output creating CLAUDE.md (default: disabled)')
   .action(async (task, options) => {
     try {
       const result = await initProject(
@@ -122,6 +123,7 @@ program
   .option('--copilot', 'Enable GitHub Copilot output')
   .option('--code', 'Alias for --copilot')
   .option('--cline', 'Enable Cline VSCode extension output')
+  .option('--claude', 'Enable Claude output creating CLAUDE.md')
   .option('--custom-output <path>', 'Path for additional custom rules output file')
   .action(async (options) => {
     try {
@@ -145,6 +147,7 @@ program
         ...(editorOptions.windsurf !== undefined ? { windsurf: editorOptions.windsurf } : {}),
         ...(editorOptions.copilot !== undefined ? { copilot: editorOptions.copilot } : {}),
         ...(editorOptions.cline !== undefined ? { cline: editorOptions.cline } : {}),
+        ...(editorOptions.claude !== undefined ? { claude: editorOptions.claude } : {}),
         ...(options.customOutput ? { customPath: options.customOutput } : {})
       };
 
@@ -185,13 +188,15 @@ program
   .option('--copilot', 'Enable and open in GitHub Copilot')
   .option('--code', 'Alias for --copilot')
   .option('--cline', 'Enable and open in VSCode with Cline extension')
+  .option('--claude', 'Enable and create Claude instructions in CLAUDE.md')
   .action(async (directory, task, options) => {
     try {
       // Check if any editor flag is present
       const hasAnyEditorEnabled = options.windsurf === true ||
         options.copilot === true ||
         options.code === true ||
-        options.cline === true;
+        options.cline === true ||
+        options.claude === true;
 
       // Convert presence of flags to boolean true
       const editorOptions = {
@@ -202,7 +207,8 @@ program
           : true,
         windsurf: options.windsurf === undefined ? undefined : true,
         copilot: (options.copilot === undefined && options.code === undefined) ? undefined : true,
-        cline: options.cline === undefined ? undefined : true
+        cline: options.cline === undefined ? undefined : true,
+        claude: options.claude === undefined ? undefined : true
       };
       
       await createNewProject(directory, task, editorOptions);

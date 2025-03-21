@@ -9,6 +9,7 @@ interface NewProjectOptions {
   windsurf?: boolean;
   copilot?: boolean;
   cline?: boolean;
+  claude?: boolean;
 }
 
 const isValidProjectName = (name: string): boolean => {
@@ -34,7 +35,7 @@ const openInEditor = async (projectPath: string, editor: string) => {
     return;
   }
 
-  type EditorCommand = 'copilot' | 'code' | 'cursor' | 'windsurf' | 'ws' | 'cline';
+  type EditorCommand = 'copilot' | 'code' | 'cursor' | 'windsurf' | 'ws' | 'cline' | 'claude';
 
   const commands: Record<EditorCommand, string[]> = {
     copilot: ['code', '.'],
@@ -42,7 +43,8 @@ const openInEditor = async (projectPath: string, editor: string) => {
     cursor: ['cursor', '.'],
     windsurf: ['windsurf', '.'],
     ws: ['windsurf', '.'],
-    cline: ['code', '.']
+    cline: ['code', '.'],
+    claude: ['code', '.'] // Default to open in VSCode when Claude is enabled
   };
 
   const cmd = commands[editor.toLowerCase() as EditorCommand];
@@ -100,7 +102,8 @@ export const createNewProject = async (
         : Boolean(options.cursor),
       windsurf: options.windsurf === undefined ? false : Boolean(options.windsurf),
       copilot: options.copilot === undefined ? false : Boolean(options.copilot),
-      cline: options.cline === undefined ? false : Boolean(options.cline)
+      cline: options.cline === undefined ? false : Boolean(options.cline),
+      claude: options.claude === undefined ? false : Boolean(options.claude)
     });
 
     // Create README.md from template
@@ -121,6 +124,7 @@ export const createNewProject = async (
     if (options.copilot) await openInEditor(projectPath, 'copilot');
     if (options.windsurf) await openInEditor(projectPath, 'windsurf');
     if (options.cline) await openInEditor(projectPath, 'cline');
+    if (options.claude) await openInEditor(projectPath, 'claude');
 
   } catch (error: any) {
     if (process.env.NODE_ENV === 'test') {
