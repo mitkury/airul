@@ -8,15 +8,26 @@ import { initProject } from './init';
 import { prompts } from './prompts';
 import { loadConfig } from './config';
 
-async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<{ files: string[], fileStatuses: Map<string, { included: boolean, error?: string }> }> {
+async function expandAndDeduplicate(sources: string[], baseDir: string): Promise<{ 
+  files: string[], 
+  fileStatuses: Map<string, { included: boolean, error?: string }>,
+  originalOrder: Map<string, number> // Track original position
+}> {
   const seen = new Set<string>();
   const result: string[] = [];
   const fileStatuses = new Map<string, { included: boolean, error?: string }>();
+  const originalOrder = new Map<string, number>(); // Store original order
+  let orderIndex = 0; // Counter for tracking order
 
   for (const pattern of sources) {
     try {
       // Normalize the pattern to use forward slashes
       const normalizedPattern = pattern.replace(/\\/g, '/');
+      
+      // Track pattern's order
+      if (!originalOrder.has(pattern)) {
+        originalOrder.set(pattern, orderIndex++);
+      }
       
       // Use glob with relative pattern and cwd option
       const matches = await glob(normalizedPattern, {
@@ -39,6 +50,11 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
           seen.add(normalized);
           result.push(normalized);
           fileStatuses.set(normalized, { included: true });
+          
+          // Track matched file order based on its pattern
+          if (!originalOrder.has(normalized)) {
+            originalOrder.set(normalized, originalOrder.get(pattern) || orderIndex++);
+          }
         }
       }
 
@@ -50,26 +66,18 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
     }
   }
 
-  // Sort files for consistent output
-  const sortedFiles = result.sort((a, b) => a.localeCompare(b));
+  // Don't sort files alphabetically - we'll respect original order instead
+  // const sortedFiles = result.sort((a, b) => a.localeCompare(b));
 
-  // Display file processing summary
-  console.log('\nFile processing summary:');
-  const allFiles = new Set([...result, ...sources]);
-  for (const file of Array.from(allFiles).sort()) {
-    const status = fileStatuses.get(file);
-    if (status) {
-      const mark = status.included ? '✓' : '✗';
-      console.log(`${mark} ${file}${status.error ? ` (${status.error})` : ''}`);
-    }
-  }
-
-  return { files: sortedFiles, fileStatuses };
+  // We don't print the file summary here anymore - that's handled by the caller
+  return { files: result, fileStatuses, originalOrder };
 }
 
 export interface GenerateResult {
   success: boolean;
   processedFiles: Map<string, boolean>; // file path -> was included
+  fileStatuses?: Map<string, { included: boolean, error?: string }>; // Detailed file statuses
+  originalOrder?: Map<string, number>; // Original ordering of files
 }
 
 export async function generateRules(options: GenerateOptions): Promise<GenerateResult> {
@@ -114,11 +122,11 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   };
 
   // Expand glob patterns and deduplicate while preserving order
-  const { files, fileStatuses } = await expandAndDeduplicate(mergedConfig.sources, baseDir);
+  const { files, fileStatuses, originalOrder } = await expandAndDeduplicate(mergedConfig.sources, baseDir);
 
   if (files.length === 0) {
     console.warn(prompts.noSourcesFound);
-    return { success: false, processedFiles: new Map() };
+    return { success: false, processedFiles: new Map(), fileStatuses, originalOrder };
   }
 
   // Convert fileStatuses to processedFiles
@@ -127,9 +135,16 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     processedFiles.set(file, status.included);
   }
 
-  // Read and format content from each file
+  // Order files by their original position before reading
+  const orderedFiles = [...files].sort((a, b) => {
+    const orderA = originalOrder.get(a) || Number.MAX_SAFE_INTEGER;
+    const orderB = originalOrder.get(b) || Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
+  
+  // Read and format content from each file, maintaining order
   const contents = await Promise.all(
-    files.map(async (file) => {
+    orderedFiles.map(async (file) => {
       try {
         const filePath = path.isAbsolute(file) ? file : path.join(baseDir, file);
         const content = await fs.readFile(filePath, 'utf8');
@@ -155,11 +170,11 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     })
   );
 
-  // Filter out empty contents
+  // Filter out empty contents while maintaining order
   const validContents = contents.filter(Boolean);
 
   if (validContents.length === 0) {
-    return { success: false, processedFiles };
+    return { success: false, processedFiles, fileStatuses, originalOrder };
   }
 
   // Add intro context and join contents with separator
@@ -174,7 +189,7 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   const hasEnabledOutput = Object.values(mergedConfig.output).some(value => value);
   if (!hasEnabledOutput) {
     console.warn('No output formats are enabled in configuration');
-    return { success: false, processedFiles };
+    return { success: false, processedFiles, fileStatuses, originalOrder };
   }
 
   // Write enabled outputs
@@ -209,8 +224,12 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
   // Wait for all writes to complete
   await Promise.all(writePromises);
 
-  console.log('Successfully generated AI rules');
-  return { success: true, processedFiles };
+  return { 
+    success: true, 
+    processedFiles,
+    fileStatuses,
+    originalOrder
+  };
 }
 
 export async function generate(config: Config) {
@@ -221,18 +240,59 @@ export async function generate(config: Config) {
       baseDir: process.cwd()
     });
 
-    // Display file processing summary
-    console.log('\nFile processing summary:');
-    const sortedFiles = Array.from(result.processedFiles.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    for (const [file, included] of sortedFiles) {
-      const mark = included ? '✓' : '✗';
-      console.log(`${mark} ${file}`);
+    // Clear message at the start about success or failure
+    if (result.success) {
+      console.log('✅ AI context files generated successfully!');
+    } else {
+      console.warn('⚠️ No AI context files were generated.');
     }
 
-    if (result.success) {
-      console.log('\nSuccessfully generated AI rules');
+    // Display file processing summary with a clearer header
+    console.log('\nFiles for AI context:');
+    
+    // Use fileStatuses if available for detailed error info
+    if (result.fileStatuses) {
+      // Get all files and sort by original order if available
+      const allFiles = Array.from(result.processedFiles.keys());
+      
+      // Sort by original order if available
+      if (result.originalOrder) {
+        allFiles.sort((a, b) => {
+          const orderA = result.originalOrder?.get(a) || Number.MAX_SAFE_INTEGER;
+          const orderB = result.originalOrder?.get(b) || Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
+      }
+      
+      for (const file of allFiles) {
+        const status = result.fileStatuses.get(file);
+        if (status) {
+          const mark = status.included ? '✓' : '✗';
+          console.log(`${mark} ${file}${status.error ? ` (${status.error})` : ''}`);
+        }
+      }
     } else {
-      console.warn('\nNo rules were generated. Check your .airul.json output configuration.');
+      // Fallback to basic processedFiles if fileStatuses is not available
+      const files = Array.from(result.processedFiles.entries());
+      
+      // Sort by original order if available
+      if (result.originalOrder) {
+        files.sort(([a], [b]) => {
+          const orderA = result.originalOrder?.get(a) || Number.MAX_SAFE_INTEGER;
+          const orderB = result.originalOrder?.get(b) || Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
+      }
+      
+      for (const [file, included] of files) {
+        const mark = included ? '✓' : '✗';
+        console.log(`${mark} ${file}`);
+      }
+    }
+
+    // Final message about configuration if needed
+    if (!result.success) {
+      console.warn('\nCheck your .airul.json output configuration.');
     }
   } catch (error) {
     console.error('Error generating rules:', error);

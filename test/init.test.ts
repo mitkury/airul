@@ -89,6 +89,13 @@ describe('init command', () => {
   });
 
   it('should respect editor flags during initialization', async () => {
+    // Delete any existing .airul.json file to ensure a fresh test
+    try {
+      await unlink(join(TEST_DIRS.INIT, '.airul.json'));
+    } catch (error) {
+      // Ignore errors if file doesn't exist
+    }
+    
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: false,
       windsurf: true,

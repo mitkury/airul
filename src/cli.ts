@@ -157,19 +157,49 @@ program
         output: mergedOutput
       };
 
+      // Get result from generateRules
       const result = await generateRules(generateOptions);
       
-      // Display file processing summary
-      console.log('\nFile processing summary:');
-      for (const [file, included] of result.processedFiles) {
-        const mark = included ? '✓' : '✗';
-        console.log(`${mark} ${file}`);
+      // Clear message at the start about success or failure
+      if (result.success) {
+        console.log('✅ AI context files generated successfully!');
+      } else {
+        console.warn('⚠️ No AI context files were generated.');
+      }
+      
+      // Display file processing summary with a clearer header
+      console.log('\nFiles for AI context:');
+      if (result.fileStatuses) {
+        const allFiles = new Set([...Array.from(result.processedFiles.keys())]);
+        for (const file of Array.from(allFiles).sort()) {
+          const status = result.fileStatuses.get(file);
+          if (status) {
+            const mark = status.included ? '✓' : '✗';
+            console.log(`${mark} ${file}${status.error ? ` (${status.error})` : ''}`);
+          }
+        }
+      } else {
+        const sortedFiles = Array.from(result.processedFiles.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        for (const [file, included] of sortedFiles) {
+          const mark = included ? '✓' : '✗';
+          console.log(`${mark} ${file}`);
+        }
       }
 
+      // Final message about which editors are configured
       if (result.success) {
-        console.log('\nSuccessfully generated AI rules');
+        // Get a list of enabled editors
+        const enabledEditors = Object.entries(mergedOutput)
+          .filter(([key, value]) => value === true && key !== 'customPath')
+          .map(([key]) => key);
+        
+        if (enabledEditors.length > 0) {
+          console.log(`\nOutput created for: ${enabledEditors.join(', ')}`);
+        } else if (mergedOutput.customPath) {
+          console.log(`\nOutput created for custom path: ${mergedOutput.customPath}`);
+        }
       } else {
-        console.warn('\nNo rules were generated. Check your .airul.json output configuration.');
+        console.warn('\nCheck your .airul.json output configuration.');
       }
     } catch (error) {
       console.error('Error generating rules:', error);

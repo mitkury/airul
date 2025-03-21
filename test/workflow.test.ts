@@ -78,11 +78,11 @@ describe('workflow', () => {
 
     // Step 3: Generate rules with new config using CLI
     const genOutput = await runCli('generate');
-    expect(genOutput).toContain('File processing summary');
+    expect(genOutput).toContain('Files for AI context');
     expect(genOutput).toContain('✓ README.md');
     expect(genOutput).toContain('✓ docs/guide.md');
     expect(genOutput).toContain('✗ non-existent.md');
-    expect(genOutput).toContain('Successfully generated AI rules');
+    expect(genOutput).toContain('✅ AI context files generated successfully');
 
     // Step 4: Verify cursor rules content
     const cursorRules = await readFile('.cursorrules', 'utf8');
@@ -124,10 +124,10 @@ describe('workflow', () => {
 
     // Generate initial rules using CLI
     const genOutput = await runCli('generate');
-    expect(genOutput).toContain('File processing summary');
+    expect(genOutput).toContain('Files for AI context');
     expect(genOutput).toContain('✓ README.md');
     expect(genOutput).toContain('✓ docs/guide.md');
-    expect(genOutput).toContain('Successfully generated AI rules');
+    expect(genOutput).toContain('✅ AI context files generated successfully');
 
     const initialRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
     expect(initialRules).toContain('Initial Project');
@@ -141,10 +141,10 @@ describe('workflow', () => {
 
     // Step 3: Generate rules again using CLI
     const regenOutput = await runCli('gen'); // Testing alias
-    expect(regenOutput).toContain('File processing summary');
+    expect(regenOutput).toContain('Files for AI context');
     expect(regenOutput).toContain('✓ README.md');
     expect(regenOutput).toContain('✓ docs/guide.md');
-    expect(regenOutput).toContain('Successfully generated AI rules');
+    expect(regenOutput).toContain('✅ AI context files generated successfully');
 
     // Step 4: Verify updated content
     const updatedRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
@@ -186,10 +186,10 @@ describe('workflow', () => {
     
     // Generate rules and verify output
     const genOutput = await runCli('generate');
-    expect(genOutput).toContain('File processing summary');
+    expect(genOutput).toContain('Files for AI context');
     expect(genOutput).toContain('✓ README.md');
     expect(genOutput).toContain('✓ docs/guide.md');
-    expect(genOutput).toContain('Successfully generated AI rules');
+    expect(genOutput).toContain('✅ AI context files generated successfully');
     
     // Verify output files were created
     const outputFiles = await readdir(testDir);
