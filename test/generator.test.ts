@@ -521,4 +521,130 @@ describe('generator', () => {
     // Verify content doesn't include TODO-AI.md
     expect(cursorRules).not.toContain('AI Workspace');
   });
+
+  it('should generate Copilot instructions when Copilot flag is enabled', async () => {
+    // Test both --copilot and --code flags
+    for (const options of [{ copilot: true }, { code: true }]) {
+      // Create test directory and config
+      const testDir = join(TEST_DIRS.GENERATOR, 'copilot-test-' + Math.random().toString(36).substring(7));
+      await createDir(testDir);
+
+      // Create test file
+      const testFile = join(testDir, 'test-rules.md');
+      await writeFile(join(testDir, '.airul.json'), JSON.stringify({
+        sources: ['test-rules.md'],
+        output: {
+          cursor: false,
+          windsurf: false,
+          copilot: false
+        }
+      }));
+      await copyFile(
+        join(__dirname, 'docs', 'test-rules.md'),
+        testFile
+      );
+
+      // Generate rules with flag
+      console.log('Generating rules with options:', JSON.stringify(options, null, 2));
+      const result = await generateRules({
+        baseDir: testDir,
+        sources: ['test-rules.md'],
+        output: getEditorOptions(options)
+      });
+      console.log('Generate result:', result.success);
+
+      expect(result.success).toBe(true);
+
+      // Verify only copilot instructions were created
+      const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
+        .then(() => true)
+        .catch(() => false);
+      const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+        .then(() => true)
+        .catch(() => false);
+      const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
+        .then(() => true)
+        .catch(() => false);
+
+      console.log('Files created:', {
+        copilot: copilotExists,
+        cursor: cursorExists,
+        windsurf: windsurfExists
+      });
+
+      expect(copilotExists).toBe(true);
+      expect(cursorExists).toBe(false);
+      expect(windsurfExists).toBe(false);
+
+      // Verify content
+      const copilotContent = await readFile(join(testDir, '.github', 'copilot-instructions.md'), 'utf8');
+      expect(copilotContent).toContain('# Test Rules');
+      expect(copilotContent).toContain('This is a context for AI editor/agent about the project');
+    }
+  });
+
+  it('should generate Claude.md when Claude flag is enabled', async () => {
+    // Create test directory and config
+    const testDir = join(TEST_DIRS.GENERATOR, 'claude-test-' + Math.random().toString(36).substring(7));
+    await createDir(testDir);
+
+    // Create test file
+    const testFile = join(testDir, 'test-rules.md');
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify({
+      sources: ['test-rules.md'],
+      output: {
+        cursor: false,
+        windsurf: false,
+        copilot: false,
+        claude: false
+      }
+    }));
+    await copyFile(
+      join(__dirname, 'docs', 'test-rules.md'),
+      testFile
+    );
+
+    // Generate rules with claude flag
+    const options = { claude: true };
+    console.log('Generating rules with options:', JSON.stringify(options, null, 2));
+    const result = await generateRules({
+      baseDir: testDir,
+      sources: ['test-rules.md'],
+      output: getEditorOptions(options)
+    });
+    console.log('Generate result:', result.success);
+
+    expect(result.success).toBe(true);
+
+    // Verify only Claude.md was created
+    const claudeExists = await fs.access(join(testDir, 'CLAUDE.md'))
+      .then(() => true)
+      .catch(() => false);
+    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+      .then(() => true)
+      .catch(() => false);
+    const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
+      .then(() => true)
+      .catch(() => false);
+    const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
+      .then(() => true)
+      .catch(() => false);
+
+    console.log('Files created:', {
+      claude: claudeExists,
+      cursor: cursorExists,
+      windsurf: windsurfExists,
+      copilot: copilotExists
+    });
+
+    expect(claudeExists).toBe(true);
+    expect(cursorExists).toBe(false);
+    expect(windsurfExists).toBe(false);
+    expect(copilotExists).toBe(false);
+
+    // Verify content
+    const claudeContent = await readFile(join(testDir, 'CLAUDE.md'), 'utf8');
+    expect(claudeContent).toContain('# Test Rules');
+    expect(claudeContent).toContain('This is a context for AI editor/agent about the project');
+  });
 });

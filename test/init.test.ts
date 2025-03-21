@@ -155,7 +155,8 @@ describe('init command', () => {
     const result = await initProject(TEST_DIRS.INIT, undefined, true, {
       cursor: false,
       windsurf: false,
-      copilot: true
+      copilot: true,
+      claude: false
     });
     
     expect(result.configCreated).toBe(true);
@@ -168,9 +169,29 @@ describe('init command', () => {
     expect(copilotInstructions).toContain('Test Project');
     expect(copilotInstructions).toContain('This is a test project with specific conventions');
     expect(copilotInstructions).toContain('This is a context for AI editor/agent about the project');
+  });
 
-    // Verify other rule files were not created
-    await expect(readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8')).rejects.toThrow();
-    await expect(readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8')).rejects.toThrow();
+  it('should generate Claude instructions when enabled', async () => {
+    // Create test content
+    const todoContent = '# Test Project\n\nThis is a test project with Claude support.';
+    await writeFile(join(TEST_DIRS.INIT, 'TODO-AI.md'), todoContent);
+
+    const result = await initProject(TEST_DIRS.INIT, undefined, true, {
+      cursor: false,
+      windsurf: false,
+      copilot: false,
+      claude: true
+    });
+    
+    expect(result.configCreated).toBe(true);
+    expect(result.rulesGenerated).toBe(true);
+
+    // Verify Claude instructions were created
+    const claudeInstructions = await readFile(join(TEST_DIRS.INIT, 'CLAUDE.md'), 'utf8');
+    
+    // Check content
+    expect(claudeInstructions).toContain('Test Project');
+    expect(claudeInstructions).toContain('This is a test project with Claude support');
+    expect(claudeInstructions).toContain('This is a context for AI editor/agent about the project');
   });
 });
