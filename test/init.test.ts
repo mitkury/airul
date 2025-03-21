@@ -221,4 +221,87 @@ describe('init command', () => {
     expect(claudeInstructions).toContain('This is a test project with Claude support');
     expect(claudeInstructions).toContain('This is a context for AI editor/agent about the project');
   });
+
+  it('should enable editors in an already initialized project', async () => {
+    // Create initial configuration with only cursor enabled
+    const configPath = join(TEST_DIRS.INIT, '.airul.json');
+    const initialConfig = {
+      sources: ['README.md', 'TODO-AI.md'],
+      output: {
+        cursor: true,
+        windsurf: false,
+        copilot: false,
+        cline: false,
+        claude: false
+      }
+    };
+    
+    await writeFile(configPath, JSON.stringify(initialConfig, null, 2));
+    
+    // Add a sample README file
+    const readmePath = join(TEST_DIRS.INIT, 'README.md');
+    await writeFile(readmePath, '# Test Project\n\nThis is a test project.');
+    
+    // Add a sample TODO-AI.md file
+    const todoPath = join(TEST_DIRS.INIT, 'TODO-AI.md');
+    await writeFile(todoPath, '# AI Workspace\n\n## Active Task\nTest the editor enabling feature.');
+    
+    // First, enable Claude using init command
+    const initResult = await initProject(TEST_DIRS.INIT, undefined, true, {
+      claude: true
+    });
+    
+    // Verify that init updated the configuration but did not create a new one
+    expect(initResult.configCreated).toBe(false);
+    expect(initResult.configUpdated).toBe(true);
+    expect(initResult.alreadyInitialized).toBe(true);
+    
+    // Verify config was updated correctly
+    let updatedConfig = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(updatedConfig.output.cursor).toBe(true); // Unchanged
+    expect(updatedConfig.output.claude).toBe(true); // Enabled
+    expect(updatedConfig.output.windsurf).toBe(false); // Unchanged
+    
+    // Verify that Claude file was generated
+    const claudePath = join(TEST_DIRS.INIT, 'CLAUDE.md');
+    const claudeExists = await readFile(claudePath, 'utf8')
+      .then(() => true)
+      .catch(() => false);
+    
+    expect(claudeExists).toBe(true);
+    
+    // Now use generateRules to generate files for Windsurf
+    // Note: generateRules doesn't update the config file
+    const genResult = await generateRules({
+      baseDir: TEST_DIRS.INIT,
+      sources: ['README.md', 'TODO-AI.md'],
+      output: {
+        ...updatedConfig.output,
+        windsurf: true
+      }
+    });
+    
+    expect(genResult.success).toBe(true);
+    
+    // Config file should not be changed by generateRules
+    updatedConfig = JSON.parse(await readFile(configPath, 'utf8'));
+    expect(updatedConfig.output.cursor).toBe(true);
+    expect(updatedConfig.output.claude).toBe(true);
+    expect(updatedConfig.output.windsurf).toBe(false); // Still false in config
+    
+    // But Windsurf file should still be generated
+    const cursorPath = join(TEST_DIRS.INIT, '.cursorrules');
+    const windsurfPath = join(TEST_DIRS.INIT, '.windsurfrules');
+    
+    const cursorExists = await readFile(cursorPath, 'utf8')
+      .then(() => true)
+      .catch(() => false);
+    
+    const windsurfExists = await readFile(windsurfPath, 'utf8')
+      .then(() => true)
+      .catch(() => false);
+    
+    expect(cursorExists).toBe(true);
+    expect(windsurfExists).toBe(true); // File should be generated even though config wasn't updated
+  });
 });
