@@ -130,15 +130,10 @@ program
       try {
         config = await loadConfig(options.config);
       } catch (error) {
-        // If config doesn't exist, initialize the project first
-        console.log('Airul is not initialized. Initializing first...');
-        const initResult = await initProject(process.cwd());
-        if (initResult.configCreated) {
-          console.log('✨ Project initialized successfully');
-          config = await loadConfig(options.config);
-        } else {
-          throw new Error('Failed to initialize project');
-        }
+        // If config doesn't exist, tell the user to initialize first instead of auto-initializing
+        console.error('Error: Airul is not initialized in this directory.');
+        console.error('Please run "airul init" first to create a configuration file.');
+        process.exit(1);
       }
       
       const editorOptions = getEditorOptions(options);
