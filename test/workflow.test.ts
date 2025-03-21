@@ -202,4 +202,73 @@ describe('workflow', () => {
     const docsFiles = await readdir(join(testDir, 'docs'));
     expect(docsFiles).toContain('guide.md');
   });
+
+  it('should enable editors in an already initialized project', async () => {
+    // Set up test directory
+    const testDir = join(TEST_DIRS.WORKFLOW, 'editor-test');
+    await cleanupTestDir(testDir);
+    await createDir(testDir);
+    process.chdir(testDir);
+    
+    // Step 1: Initialize with cursor only
+    await runCli('init');
+    
+    // Verify initial configuration
+    const initialConfig = JSON.parse(await readFile('.airul.json', 'utf8'));
+    expect(initialConfig.output.cursor).toBe(true);
+    expect(initialConfig.output.claude).toBe(false);
+    expect(initialConfig.output.windsurf).toBe(false);
+    
+    // Create some documentation
+    await writeFile('README.md', '# Editor Test\n\nTesting enabling editors in existing projects.');
+    
+    // Step 2: Enable Claude using init command
+    const initOutput = await runCli('init --claude');
+    expect(initOutput).toContain('Updated configuration with editor options');
+    
+    // Verify Claude is now enabled in the config
+    const updatedConfig1 = JSON.parse(await readFile('.airul.json', 'utf8'));
+    expect(updatedConfig1.output.cursor).toBe(true); // Still enabled
+    expect(updatedConfig1.output.claude).toBe(true); // Now enabled
+    expect(updatedConfig1.output.windsurf).toBe(false); // Still disabled
+    
+    // Verify Claude file was created
+    const claudeExists = await readFile('CLAUDE.md')
+      .then(() => true)
+      .catch(() => false);
+    expect(claudeExists).toBe(true);
+    
+    // Step 3: Use gen command with windsurf, which will generate the windsurf file
+    // but not update the config
+    const genOutput = await runCli('gen --windsurf');
+    expect(genOutput).toContain('Files for AI context');
+    
+    // Verify config is NOT changed by gen command (gen doesn't update config)
+    const updatedConfig2 = JSON.parse(await readFile('.airul.json', 'utf8'));
+    expect(updatedConfig2.output.cursor).toBe(true); // Still enabled
+    expect(updatedConfig2.output.claude).toBe(true); // Still enabled
+    expect(updatedConfig2.output.windsurf).toBe(false); // Still disabled - gen doesn't update config
+    
+    // But Windsurf file should be generated anyway based on the command line flag
+    const cursorExists = await readFile('.cursorrules')
+      .then(() => true)
+      .catch(() => false);
+    const windsurfExists = await readFile('.windsurfrules')
+      .then(() => true)
+      .catch(() => false);
+    
+    expect(cursorExists).toBe(true);
+    expect(claudeExists).toBe(true);
+    expect(windsurfExists).toBe(true); // File should be generated even though config wasn't updated
+    
+    // Step 4: Now enable windsurf in the config using init command
+    const initOutput2 = await runCli('init --windsurf');
+    expect(initOutput2).toContain('Updated configuration with editor options');
+    
+    // Verify windsurf is now enabled in the config
+    const updatedConfig3 = JSON.parse(await readFile('.airul.json', 'utf8'));
+    expect(updatedConfig3.output.cursor).toBe(true);
+    expect(updatedConfig3.output.claude).toBe(true);
+    expect(updatedConfig3.output.windsurf).toBe(true); // Now enabled via init
+  });
 }); 
