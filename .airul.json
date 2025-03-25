@@ -10,6 +10,7 @@
     "cursor": true,
     "windsurf": false,
     "copilot": false,
-    "cline": false
+    "cline": false,
+    "claude": true
   }
 }
