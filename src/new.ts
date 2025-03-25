@@ -44,7 +44,7 @@ const openInEditor = async (projectPath: string, editor: string) => {
     windsurf: ['windsurf', '.'],
     ws: ['windsurf', '.'],
     cline: ['code', '.'],
-    claude: ['code', '.'] // Default to open in VSCode when Claude is enabled
+    claude: ['claude', '.'] // Open Claude Code
   };
 
   const cmd = commands[editor.toLowerCase() as EditorCommand];
