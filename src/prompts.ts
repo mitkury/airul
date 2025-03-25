@@ -4,7 +4,7 @@ export const prompts = {
     `This is a context for AI editor/agent about the project. It's generated with a tool Airul (https://github.com/mitkury/airul) out of ${sourcesCount} sources. Feel free to edit .airul.json to change the sources and configure editors. Run \`airul gen\` to update the context after making changes to .airul.json or the sources. Remember to update TODO-AI.md after major changes in the project, keeping track of completed tasks and new developments.`,
 
   // Config descriptions
-  configWhat: "Generate AI rules from your documentation for Cursor, Windsurf, GitHub Copilot, and other AI-powered tools",
+  configWhat: "Generate AI rules from your docs for Cursor, Windsurf, GitHub Copilot, Claude Code and other AI-powered tools",
   configHow: "Edit 'sources' to include your important docs (supports glob patterns like 'docs/*.md') and enable/disable AI tools in 'output'",
 
   // Tasks
