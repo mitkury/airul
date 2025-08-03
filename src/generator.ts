@@ -209,6 +209,10 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     writePromises.push(fs.writeFile(path.join(baseDir, 'CLAUDE.md'), fullContent));
   }
 
+  if (mergedConfig.output.codex) {
+    writePromises.push(fs.writeFile(path.join(baseDir, 'AGENTS.md'), fullContent));
+  }
+
   if (mergedConfig.output.copilot) {
     const githubDir = path.join(baseDir, '.github');
     await fs.mkdir(githubDir, { recursive: true });

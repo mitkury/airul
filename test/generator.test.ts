@@ -6,6 +6,7 @@ import { join, dirname } from 'path';
 import { initProject } from '../src/init';
 import fs from 'fs/promises';
 import { getEditorOptions } from '../src/utils';
+import path from 'path';
 
 describe('generator', () => {
   const testDir = TEST_DIRS.GENERATOR;
@@ -646,5 +647,76 @@ describe('generator', () => {
     const claudeContent = await readFile(join(testDir, 'CLAUDE.md'), 'utf8');
     expect(claudeContent).toContain('# Test Rules');
     expect(claudeContent).toContain('This is a context for AI editor/agent about the project');
+  });
+
+  it('should generate AGENTS.md when codex flag is enabled', async () => {
+    // Create test directory and config
+    const testDir = join(TEST_DIRS.GENERATOR, 'codex-test-' + Math.random().toString(36).substring(7));
+    await createDir(testDir);
+
+    // Create test file
+    const testFile = join(testDir, 'test-rules.md');
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify({
+      sources: ['test-rules.md'],
+      output: {
+        cursor: false,
+        windsurf: false,
+        copilot: false,
+        claude: false,
+        codex: false
+      }
+    }));
+    await copyFile(
+      join(__dirname, 'docs', 'test-rules.md'),
+      testFile
+    );
+
+    // Generate rules with codex flag
+    const options = { codex: true };
+    console.log('Generating rules with options:', JSON.stringify(options, null, 2));
+    const result = await generateRules({
+      baseDir: testDir,
+      sources: ['test-rules.md'],
+      output: getEditorOptions(options)
+    });
+    console.log('Generate result:', result.success);
+
+    expect(result.success).toBe(true);
+
+    // Verify only AGENTS.md was created
+    const codexExists = await fs.access(join(testDir, 'AGENTS.md'))
+      .then(() => true)
+      .catch(() => false);
+    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+      .then(() => true)
+      .catch(() => false);
+    const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
+      .then(() => true)
+      .catch(() => false);
+    const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
+      .then(() => true)
+      .catch(() => false);
+    const claudeExists = await fs.access(join(testDir, 'CLAUDE.md'))
+      .then(() => true)
+      .catch(() => false);
+
+    console.log('Files created:', {
+      codex: codexExists,
+      cursor: cursorExists,
+      windsurf: windsurfExists,
+      copilot: copilotExists,
+      claude: claudeExists
+    });
+
+    expect(codexExists).toBe(true);
+    expect(cursorExists).toBe(false);
+    expect(windsurfExists).toBe(false);
+    expect(copilotExists).toBe(false);
+    expect(claudeExists).toBe(false);
+
+    // Verify content
+    const codexContent = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
+    expect(codexContent).toContain('# Test Rules');
+    expect(codexContent).toContain('This is a context for AI editor/agent about the project');
   });
 });

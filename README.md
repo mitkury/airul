@@ -94,6 +94,7 @@ Airul supports multiple AI-powered editors. You can enable them during initializ
 | Windsurf | `.windsurfrules` | `--windsurf` | `"windsurf": true` |
 | Claude | `CLAUDE.md` | `--claude` | `"claude": true` |
 | Cline | `.clinerules` | `--cline` | `"cline": true` |
+| Codex | `AGENTS.md` | `--codex` | `"codex": true` |
 
 **Example: Enabling editors during initialization:**
 ```bash
@@ -101,7 +102,7 @@ Airul supports multiple AI-powered editors. You can enable them during initializ
 airul init --cursor --claude
 
 # Enable all editors
-airul init --cursor --copilot --windsurf --claude --cline
+airul init --cursor --copilot --windsurf --claude --cline --codex
 ```
 
 **Example: Enabling editors in an existing project:**
@@ -115,6 +116,11 @@ airul gen --claude
 airul init --cursor --copilot --claude
 # OR
 airul gen --cursor --copilot --claude
+
+# Add Codex support
+airul init --codex
+# OR
+airul gen --codex
 ```
 
 You can use either `airul init` or `airul gen` with editor flags to enable editors in an existing project. Both commands will update your configuration.
@@ -128,7 +134,8 @@ You can use either `airul init` or `airul gen` with editor flags to enable edito
     "copilot": true,
     "windsurf": false,
     "claude": true,
-    "cline": false
+    "cline": false,
+    "codex": false
   }
 }
 ```
@@ -141,6 +148,7 @@ You can use either `airul init` or `airul gen` with editor flags to enable edito
   - Windsurf (.windsurfrules)
   - Claude (CLAUDE.md)
   - Cline VSCode Extension (.clinerules)
+  - Codex (AGENTS.md)
 - 📝 Works with any text files (markdown, txt, etc.)
 - ⚙️ Simple configuration
 

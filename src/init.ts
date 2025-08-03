@@ -16,7 +16,8 @@ const defaultConfig = {
     windsurf: false,
     copilot: false,
     cline: false,
-    claude: false
+    claude: false,
+    codex: false
   }
 };
 
@@ -26,6 +27,7 @@ export interface EditorOptions {
   copilot?: boolean;
   cline?: boolean;
   claude?: boolean;
+  codex?: boolean;
 }
 
 export interface InitResult {
@@ -64,7 +66,8 @@ export async function initProject(
       editorOptions.windsurf !== undefined ||
       editorOptions.copilot !== undefined ||
       editorOptions.cline !== undefined ||
-      editorOptions.claude !== undefined;
+      editorOptions.claude !== undefined ||
+      editorOptions.codex !== undefined;
     
     if (hasExplicitEditorOptions) {
       // Update existing config with provided editor options
@@ -74,7 +77,8 @@ export async function initProject(
         ...(editorOptions.windsurf !== undefined ? { windsurf: Boolean(editorOptions.windsurf) } : {}),
         ...(editorOptions.copilot !== undefined ? { copilot: Boolean(editorOptions.copilot) } : {}),
         ...(editorOptions.cline !== undefined ? { cline: Boolean(editorOptions.cline) } : {}),
-        ...(editorOptions.claude !== undefined ? { claude: Boolean(editorOptions.claude) } : {})
+        ...(editorOptions.claude !== undefined ? { claude: Boolean(editorOptions.claude) } : {}),
+        ...(editorOptions.codex !== undefined ? { codex: Boolean(editorOptions.codex) } : {})
       };
       
       // Write updated config back to file
