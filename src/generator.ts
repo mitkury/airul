@@ -24,10 +24,8 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
       // Normalize the pattern to use forward slashes
       const normalizedPattern = pattern.replace(/\\/g, '/');
       
-      // Track pattern's order
-      if (!originalOrder.has(pattern)) {
-        originalOrder.set(pattern, orderIndex++);
-      }
+      // Check if this is a glob pattern (contains wildcards)
+      const isGlobPattern = normalizedPattern.includes('*') || normalizedPattern.includes('?') || normalizedPattern.includes('[');
       
       // Use glob with relative pattern and cwd option
       const matches = await glob(normalizedPattern, {
@@ -43,31 +41,35 @@ async function expandAndDeduplicate(sources: string[], baseDir: string): Promise
         continue;
       }
 
+      // Sort matches alphabetically if this is a glob pattern
+      const sortedMatches = isGlobPattern ? matches.sort() : matches;
+      
       // Add matched files (they're already relative to baseDir)
-      for (const file of matches) {
+      for (const file of sortedMatches) {
         const normalized = file.replace(/\\/g, '/');
         if (!seen.has(normalized)) {
           seen.add(normalized);
           result.push(normalized);
           fileStatuses.set(normalized, { included: true });
           
-          // Track matched file order based on its pattern
+          // For explicit files, use the pattern's order
+          // For glob patterns, use the pattern's order (files within the glob will be sorted alphabetically)
           if (!originalOrder.has(normalized)) {
-            originalOrder.set(normalized, originalOrder.get(pattern) || orderIndex++);
+            originalOrder.set(normalized, orderIndex);
           }
         }
       }
 
       // Mark the pattern as included if it matched any files
       fileStatuses.set(pattern, { included: true });
+      
+      // Increment order index for the next pattern
+      orderIndex++;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'unknown error';
       fileStatuses.set(pattern, { included: false, error: errorMessage });
     }
   }
-
-  // Don't sort files alphabetically - we'll respect original order instead
-  // const sortedFiles = result.sort((a, b) => a.localeCompare(b));
 
   // We don't print the file summary here anymore - that's handled by the caller
   return { files: result, fileStatuses, originalOrder };
@@ -137,8 +139,8 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
 
   // Order files by their original position before reading
   const orderedFiles = [...files].sort((a, b) => {
-    const orderA = originalOrder.get(a) || Number.MAX_SAFE_INTEGER;
-    const orderB = originalOrder.get(b) || Number.MAX_SAFE_INTEGER;
+    const orderA = originalOrder.has(a) ? originalOrder.get(a)! : Number.MAX_SAFE_INTEGER;
+    const orderB = originalOrder.has(b) ? originalOrder.get(b)! : Number.MAX_SAFE_INTEGER;
     return orderA - orderB;
   });
   

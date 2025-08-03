@@ -1,7 +1,7 @@
 # AI Workspace
 
 ## Active Task
-✅ **COMPLETED**: Add Codex support for generating AGENTS.md
+✅ **COMPLETED**: Write tests for document ordering fix
 
 ## Status
 ✅ Completed
@@ -19,6 +19,18 @@
   - Updated README documentation to include Codex in supported editors table
   - Added comprehensive test coverage for Codex functionality
   - All tests passing (46/46)
+- ✅ **COMPLETED**: Fix document ordering in generated files
+  - Fixed issue where files were appearing in alphabetical order instead of source array order
+  - Updated `expandAndDeduplicate` function to properly handle explicit files vs glob patterns
+  - Explicit files maintain their order in the sources array
+  - Glob patterns (like `docs/*.md`) get alphabetical ordering within their group
+  - Fixed bug where `0` was being treated as falsy in the sorting logic
+  - All tests passing (46/46)
+- ✅ **COMPLETED**: Write tests for document ordering fix
+  - Added test case to verify explicit files maintain their order in sources array
+  - Added test case to verify glob patterns are sorted alphabetically within their group
+  - Both new tests are passing and verify the ordering functionality works correctly
+  - All generator tests passing (16/16)
 
 ## Notes
 - I'll update this file to track our progress and maintain context

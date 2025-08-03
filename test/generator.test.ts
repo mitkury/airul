@@ -719,4 +719,135 @@ describe('generator', () => {
     expect(codexContent).toContain('# Test Rules');
     expect(codexContent).toContain('This is a context for AI editor/agent about the project');
   });
+
+  it('should generate files in the correct order as specified in sources array', async () => {
+    // Create test directory and config
+    const testDir = join(TEST_DIRS.GENERATOR, 'order-test-' + Math.random().toString(36).substring(7));
+    await createDir(testDir);
+
+    // Create test files in a specific order
+    await writeFile(join(testDir, 'first.md'), '# First File\n\nThis should appear first.');
+    await writeFile(join(testDir, 'second.md'), '# Second File\n\nThis should appear second.');
+    await writeFile(join(testDir, 'third.md'), '# Third File\n\nThis should appear third.');
+
+    // Create config with specific order
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify({
+      sources: ['second.md', 'first.md', 'third.md'], // Intentionally out of order
+      output: {
+        cursor: true,
+        windsurf: false,
+        copilot: false,
+        claude: false,
+        codex: false
+      }
+    }));
+
+    // Generate rules
+    const result = await generateRules({
+      baseDir: testDir,
+      sources: ['second.md', 'first.md', 'third.md'],
+      output: { cursor: true }
+    });
+
+    expect(result.success).toBe(true);
+
+    // Verify .cursorrules was created
+    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+      .then(() => true)
+      .catch(() => false);
+    expect(cursorExists).toBe(true);
+
+    // Verify content order
+    const cursorContent = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    
+    // Check that files appear in the order specified in sources array
+    const secondIndex = cursorContent.indexOf('# From second.md:');
+    const firstIndex = cursorContent.indexOf('# From first.md:');
+    const thirdIndex = cursorContent.indexOf('# From third.md:');
+    
+    expect(secondIndex).toBeGreaterThan(-1);
+    expect(firstIndex).toBeGreaterThan(-1);
+    expect(thirdIndex).toBeGreaterThan(-1);
+    
+    // Verify order: second should come before first, first should come before third
+    expect(secondIndex).toBeLessThan(firstIndex);
+    expect(firstIndex).toBeLessThan(thirdIndex);
+    
+    // Verify content is present
+    expect(cursorContent).toContain('This should appear first.');
+    expect(cursorContent).toContain('This should appear second.');
+    expect(cursorContent).toContain('This should appear third.');
+  });
+
+  it('should handle glob patterns with alphabetical ordering within the group', async () => {
+    // Create test directory and config
+    const testDir = join(TEST_DIRS.GENERATOR, 'glob-order-test-' + Math.random().toString(36).substring(7));
+    await createDir(testDir);
+
+    // Create a docs directory with files in non-alphabetical order
+    await fs.mkdir(join(testDir, 'docs'), { recursive: true });
+    await writeFile(join(testDir, 'docs', 'c.md'), '# C File\n\nThis should appear third in docs.');
+    await writeFile(join(testDir, 'docs', 'a.md'), '# A File\n\nThis should appear first in docs.');
+    await writeFile(join(testDir, 'docs', 'b.md'), '# B File\n\nThis should appear second in docs.');
+
+    // Create other files
+    await writeFile(join(testDir, 'first.md'), '# First File\n\nThis should appear first overall.');
+    await writeFile(join(testDir, 'last.md'), '# Last File\n\nThis should appear last overall.');
+
+    // Create config with mixed explicit files and glob patterns
+    await writeFile(join(testDir, '.airul.json'), JSON.stringify({
+      sources: ['first.md', 'docs/*.md', 'last.md'],
+      output: {
+        cursor: true,
+        windsurf: false,
+        copilot: false,
+        claude: false,
+        codex: false
+      }
+    }));
+
+    // Generate rules
+    const result = await generateRules({
+      baseDir: testDir,
+      sources: ['first.md', 'docs/*.md', 'last.md'],
+      output: { cursor: true }
+    });
+
+    expect(result.success).toBe(true);
+
+    // Verify .cursorrules was created
+    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+      .then(() => true)
+      .catch(() => false);
+    expect(cursorExists).toBe(true);
+
+    // Verify content order
+    const cursorContent = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    
+    // Check that files appear in the correct order
+    const firstIndex = cursorContent.indexOf('# From first.md:');
+    const aIndex = cursorContent.indexOf('# From docs/a.md:');
+    const bIndex = cursorContent.indexOf('# From docs/b.md:');
+    const cIndex = cursorContent.indexOf('# From docs/c.md:');
+    const lastIndex = cursorContent.indexOf('# From last.md:');
+    
+    expect(firstIndex).toBeGreaterThan(-1);
+    expect(aIndex).toBeGreaterThan(-1);
+    expect(bIndex).toBeGreaterThan(-1);
+    expect(cIndex).toBeGreaterThan(-1);
+    expect(lastIndex).toBeGreaterThan(-1);
+    
+    // Verify overall order: first -> docs (alphabetical) -> last
+    expect(firstIndex).toBeLessThan(aIndex);
+    expect(aIndex).toBeLessThan(bIndex);
+    expect(bIndex).toBeLessThan(cIndex);
+    expect(cIndex).toBeLessThan(lastIndex);
+    
+    // Verify content is present
+    expect(cursorContent).toContain('This should appear first overall.');
+    expect(cursorContent).toContain('This should appear first in docs.');
+    expect(cursorContent).toContain('This should appear second in docs.');
+    expect(cursorContent).toContain('This should appear third in docs.');
+    expect(cursorContent).toContain('This should appear last overall.');
+  });
 });
