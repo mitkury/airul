@@ -1,6 +1,6 @@
 # Airul
 
-Airul is for generating context for AI agents (AGENTS.md, CLAUDE.md, etc) from your docs. So you can link several text files, including description of your project, user docs and other things that seems useful for agents and then generate one global context file referenced by your AI agent.
+Airul generates context for AI agents (AGENTS.md, CLAUDE.md, etc.) from your docs. You can link multiple text files—project description, user docs, and other materials useful for agents—and generate a single global context file referenced by your AI agent.
 
 ## How to use
 
