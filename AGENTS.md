@@ -1,3 +1,55 @@
+This is a context for AI editor/agent about the project. It's generated with a tool Airul (https://github.com/mitkury/airul) out of 3 sources. Feel free to edit .airul.json to change the sources and configure editors. Run `airul gen` to update the context after making changes to .airul.json or the sources. Remember to update TODO-AI.md after major changes in the project, keeping track of completed tasks and new developments.
+
+# From TODO-AI.md:
+
+# AI Workspace
+
+## Active Task
+✅ **COMPLETED**: Write tests for document ordering fix
+
+## Status
+✅ Completed
+
+## Context & Progress
+- Created: 2025-02-13
+- I (AI) will maintain this document as we work together
+- My current focus: Understanding and working on the active task
+
+## Task History
+- ✅ **COMPLETED**: Add ability to generate AGENTS.md for Codex @https://platform.openai.com/docs/codex/overview#using_agents_md
+  - Added `codex` field to all relevant TypeScript interfaces
+  - Updated generator to create AGENTS.md when codex is enabled
+  - Added `--codex` flag to CLI commands (init, generate, new)
+  - Updated README documentation to include Codex in supported editors table
+  - Added comprehensive test coverage for Codex functionality
+  - All tests passing (46/46)
+- ✅ **COMPLETED**: Fix document ordering in generated files
+  - Fixed issue where files were appearing in alphabetical order instead of source array order
+  - Updated `expandAndDeduplicate` function to properly handle explicit files vs glob patterns
+  - Explicit files maintain their order in the sources array
+  - Glob patterns (like `docs/*.md`) get alphabetical ordering within their group
+  - Fixed bug where `0` was being treated as falsy in the sorting logic
+  - All tests passing (46/46)
+- ✅ **COMPLETED**: Write tests for document ordering fix
+  - Added test case to verify explicit files maintain their order in sources array
+  - Added test case to verify glob patterns are sorted alphabetically within their group
+  - Both new tests are passing and verify the ordering functionality works correctly
+  - All generator tests passing (16/16)
+
+## Notes
+- I'll update this file to track our progress and maintain context
+- I'll keep sections concise but informative
+- I'll update status and add key decisions/changes
+- I'll add new tasks as they come up
+
+## Next Steps
+- Consider adding support for other AI editors as needed
+- Monitor usage and feedback for the Codex integration
+- Consider adding more customization options for AGENTS.md format if needed
+---
+
+# From README.md:
+
 # Airul
 
 Airul is for generating context for AI agents (AGENTS.md, CLAUDE.md, etc) from your docs. So you can link several text files, including description of your project, user docs and other things that seems useful for agents and then generate one global context file referenced by your AI agent.
@@ -155,3 +207,31 @@ You can use either `airul init` or `airul gen` with editor flags to enable edito
 ## License
 
 MIT
+---
+
+# From docs/tldr-ai.md:
+
+# TLDR for AI dev
+
+Be direct in all responses. Use simple language. Avoid niceties, filler words, and formality.
+
+Feel free to run terminal commands yourself. Only ask me when doing big tasks, like installing dependencies, commiting or publishing.
+
+## Task Management
+Use TODO-AI.md as your workspace:
+- Update the active task as focus shifts
+- Track progress and key decisions
+- Add context that might be useful later
+- Keep it concise but informative
+- Don't delete history, append to it
+
+When continiusly failing the tests after 5 or more edits - try to re-think the approach, find out if there are not needed complexities or brittle parts and change those.
+
+## Publishing Steps
+When publishing, follow these steps in order:
+1. Build and test: `npm run build && npm test`
+2. Commit changes with scope prefix: `feat: short description`
+3. Push changes: `git push`
+4. Create patch version: `npm version patch`
+5. Push tags: `git push --tags`
+6. Publish: `npm publish`

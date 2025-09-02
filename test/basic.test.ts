@@ -32,7 +32,7 @@ describe('basic tests', () => {
     });
 
     // Verify output
-    const output = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const output = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     expect(output).toContain('# Test Rules');
     expect(output).toContain('## Basic Rules');
     expect(output).toContain('## More Rules');
@@ -47,7 +47,7 @@ describe('basic tests', () => {
     });
 
     // Verify rules were generated (since we initialize)
-    const outputFile = join(testDir, '.cursorrules');
+    const outputFile = join(testDir, 'AGENTS.md');
     const content = await readFile(outputFile, 'utf8');
     expect(content).toContain('AI Workspace'); // From TODO-AI.md
   });
@@ -74,11 +74,11 @@ describe('basic tests', () => {
 
     // Verify all output files exist and have the same content
     const windsurfOutput = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const cursorOutput = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agentsOutput = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     const customOutput = await readFile(join(testDir, 'custom-rules.txt'), 'utf8');
 
-    expect(windsurfOutput).toBe(cursorOutput);
-    expect(cursorOutput).toBe(customOutput);
+    expect(windsurfOutput).toBe(agentsOutput);
+    expect(agentsOutput).toBe(customOutput);
     expect(windsurfOutput).toContain('# Test Rules');
   });
 });

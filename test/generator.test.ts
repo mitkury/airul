@@ -56,11 +56,11 @@ describe('generator', () => {
 
     // Verify output files
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
 
     expect(windsurfRules).toContain('# Test Rules');
-    expect(cursorRules).toContain('# Test Rules');
-    expect(windsurfRules).toBe(cursorRules);
+    expect(agents).toContain('# Test Rules');
+    expect(windsurfRules).toBe(agents);
   });
 
   it('should initialize project if not initialized', async () => {
@@ -130,7 +130,7 @@ describe('generator', () => {
     expect(copilotInstructions).toContain('This is a context for AI editor/agent about the project');
 
     // Verify other rule files were not created
-    await expect(fs.access(join(testDir, '.cursorrules'))).rejects.toThrow();
+    await expect(fs.access(join(testDir, 'AGENTS.md'))).rejects.toThrow();
     await expect(fs.access(join(testDir, '.windsurfrules'))).rejects.toThrow();
   });
 
@@ -161,15 +161,15 @@ describe('generator', () => {
 
     expect(result.success).toBe(true);
 
-    // Verify only cursor rules were created
-    const cursorRulesExists = await fs.access(join(testDir, '.cursorrules'))
+    // Verify only AGENTS.md was created
+    const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
     const windsurfRulesExists = await fs.access(join(testDir, '.windsurfrules'))
       .then(() => true)
       .catch(() => false);
 
-    expect(cursorRulesExists).toBe(true);
+    expect(agentsExists).toBe(true);
     expect(windsurfRulesExists).toBe(false);
   });
 
@@ -204,14 +204,14 @@ describe('generator', () => {
     expect(result.success).toBe(true);
 
     // Verify only windsurf rules were created
-    const cursorRulesExists = await fs.access(join(testDir, '.cursorrules'))
+    const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
     const windsurfRulesExists = await fs.access(join(testDir, '.windsurfrules'))
       .then(() => true)
       .catch(() => false);
 
-    expect(cursorRulesExists).toBe(false);
+    expect(agentsExists).toBe(false);
     expect(windsurfRulesExists).toBe(true);
   });
 
@@ -272,7 +272,7 @@ describe('generator', () => {
       const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
         .then(() => true)
         .catch(() => false);
-      const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+      const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
         .then(() => true)
         .catch(() => false);
       const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
@@ -281,12 +281,12 @@ describe('generator', () => {
 
       console.log('Files created:', {
         copilot: copilotExists,
-        cursor: cursorExists,
+        agents: agentsExists,
         windsurf: windsurfExists
       });
 
       expect(copilotExists).toBe(true);
-      expect(cursorExists).toBe(false);
+      expect(agentsExists).toBe(false);
       expect(windsurfExists).toBe(false);
 
       // Verify content
@@ -331,13 +331,13 @@ describe('generator', () => {
 
     // Verify output files exist and contain content from both sources
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
 
     // Should contain content from both files
     expect(windsurfRules).toContain('Test Project');
     expect(windsurfRules).toContain('AI Rules');
-    expect(cursorRules).toContain('Test Project');
-    expect(cursorRules).toContain('AI Rules');
+    expect(agents).toContain('Test Project');
+    expect(agents).toContain('AI Rules');
   });
 
   it('should handle missing files and still generate rules from available ones', async () => {
@@ -374,14 +374,14 @@ describe('generator', () => {
 
     // Verify files were generated with available content
     const windsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     
     // Should contain content from README.md
     expect(windsurfRules).toContain('Test Project');
-    expect(cursorRules).toContain('Test Project');
+    expect(agents).toContain('Test Project');
     
     // Should have same content in both files
-    expect(windsurfRules).toBe(cursorRules);
+    expect(windsurfRules).toBe(agents);
   });
 
   it('should update rules when docs are modified', async () => {
@@ -417,9 +417,9 @@ describe('generator', () => {
 
     // Verify initial content
     const initialWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const initialCursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const initialAgents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     expect(initialWindsurfRules).toContain('Initial content');
-    expect(initialCursorRules).toContain('Initial content');
+    expect(initialAgents).toContain('Initial content');
 
     // Step 2: Modify docs
     const updatedContent = '# Test Project\nUpdated content\nNew section added';
@@ -435,21 +435,21 @@ describe('generator', () => {
 
     // Verify content was updated
     const updatedWindsurfRules = await readFile(join(testDir, '.windsurfrules'), 'utf8');
-    const updatedCursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const updatedAgents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     
     // Should contain new content
     expect(updatedWindsurfRules).toContain('Updated content');
     expect(updatedWindsurfRules).toContain('New section added');
-    expect(updatedCursorRules).toContain('Updated content');
-    expect(updatedCursorRules).toContain('New section added');
+    expect(updatedAgents).toContain('Updated content');
+    expect(updatedAgents).toContain('New section added');
     
     // Should not contain old content
     expect(updatedWindsurfRules).not.toContain('Initial content');
-    expect(updatedCursorRules).not.toContain('Initial content');
+    expect(updatedAgents).not.toContain('Initial content');
 
     // Should still contain TODO-AI.md content
     expect(updatedWindsurfRules).toContain('AI Workspace');
-    expect(updatedCursorRules).toContain('AI Workspace');
+    expect(updatedAgents).toContain('AI Workspace');
   });
 
   it('should only show user-specified sources in status', async () => {
@@ -470,8 +470,8 @@ describe('generator', () => {
     expect(result.success).toBe(true);
 
     // Verify rules were generated
-    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
-    expect(cursorRules).toContain('Test Project');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
+    expect(agents).toContain('Test Project');
 
     // Verify status only shows README.md
     const processedFiles = result.processedFiles;
@@ -509,8 +509,8 @@ describe('generator', () => {
     expect(result.success).toBe(true);
 
     // Verify rules were generated
-    const cursorRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
-    expect(cursorRules).toContain('Test Project');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
+    expect(agents).toContain('Test Project');
 
     // Verify status only shows README.md
     const processedFiles = result.processedFiles;
@@ -520,133 +520,7 @@ describe('generator', () => {
     expect(processedFiles.has('TODO-AI.md')).toBe(false);
 
     // Verify content doesn't include TODO-AI.md
-    expect(cursorRules).not.toContain('AI Workspace');
-  });
-
-  it('should generate Copilot instructions when Copilot flag is enabled', async () => {
-    // Test both --copilot and --code flags
-    for (const options of [{ copilot: true }, { code: true }]) {
-      // Create test directory and config
-      const testDir = join(TEST_DIRS.GENERATOR, 'copilot-test-' + Math.random().toString(36).substring(7));
-      await createDir(testDir);
-
-      // Create test file
-      const testFile = join(testDir, 'test-rules.md');
-      await writeFile(join(testDir, '.airul.json'), JSON.stringify({
-        sources: ['test-rules.md'],
-        output: {
-          cursor: false,
-          windsurf: false,
-          copilot: false
-        }
-      }));
-      await copyFile(
-        join(__dirname, 'docs', 'test-rules.md'),
-        testFile
-      );
-
-      // Generate rules with flag
-      console.log('Generating rules with options:', JSON.stringify(options, null, 2));
-      const result = await generateRules({
-        baseDir: testDir,
-        sources: ['test-rules.md'],
-        output: getEditorOptions(options)
-      });
-      console.log('Generate result:', result.success);
-
-      expect(result.success).toBe(true);
-
-      // Verify only copilot instructions were created
-      const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
-        .then(() => true)
-        .catch(() => false);
-      const cursorExists = await fs.access(join(testDir, '.cursorrules'))
-        .then(() => true)
-        .catch(() => false);
-      const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
-        .then(() => true)
-        .catch(() => false);
-
-      console.log('Files created:', {
-        copilot: copilotExists,
-        cursor: cursorExists,
-        windsurf: windsurfExists
-      });
-
-      expect(copilotExists).toBe(true);
-      expect(cursorExists).toBe(false);
-      expect(windsurfExists).toBe(false);
-
-      // Verify content
-      const copilotContent = await readFile(join(testDir, '.github', 'copilot-instructions.md'), 'utf8');
-      expect(copilotContent).toContain('# Test Rules');
-      expect(copilotContent).toContain('This is a context for AI editor/agent about the project');
-    }
-  });
-
-  it('should generate Claude.md when Claude flag is enabled', async () => {
-    // Create test directory and config
-    const testDir = join(TEST_DIRS.GENERATOR, 'claude-test-' + Math.random().toString(36).substring(7));
-    await createDir(testDir);
-
-    // Create test file
-    const testFile = join(testDir, 'test-rules.md');
-    await writeFile(join(testDir, '.airul.json'), JSON.stringify({
-      sources: ['test-rules.md'],
-      output: {
-        cursor: false,
-        windsurf: false,
-        copilot: false,
-        claude: false
-      }
-    }));
-    await copyFile(
-      join(__dirname, 'docs', 'test-rules.md'),
-      testFile
-    );
-
-    // Generate rules with claude flag
-    const options = { claude: true };
-    console.log('Generating rules with options:', JSON.stringify(options, null, 2));
-    const result = await generateRules({
-      baseDir: testDir,
-      sources: ['test-rules.md'],
-      output: getEditorOptions(options)
-    });
-    console.log('Generate result:', result.success);
-
-    expect(result.success).toBe(true);
-
-    // Verify only Claude.md was created
-    const claudeExists = await fs.access(join(testDir, 'CLAUDE.md'))
-      .then(() => true)
-      .catch(() => false);
-    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
-      .then(() => true)
-      .catch(() => false);
-    const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
-      .then(() => true)
-      .catch(() => false);
-    const copilotExists = await fs.access(join(testDir, '.github', 'copilot-instructions.md'))
-      .then(() => true)
-      .catch(() => false);
-
-    console.log('Files created:', {
-      claude: claudeExists,
-      cursor: cursorExists,
-      windsurf: windsurfExists,
-      copilot: copilotExists
-    });
-
-    expect(claudeExists).toBe(true);
-    expect(cursorExists).toBe(false);
-    expect(windsurfExists).toBe(false);
-    expect(copilotExists).toBe(false);
-
-    // Verify content
-    const claudeContent = await readFile(join(testDir, 'CLAUDE.md'), 'utf8');
-    expect(claudeContent).toContain('# Test Rules');
-    expect(claudeContent).toContain('This is a context for AI editor/agent about the project');
+    expect(agents).not.toContain('AI Workspace');
   });
 
   it('should generate AGENTS.md when codex flag is enabled', async () => {
@@ -687,7 +561,7 @@ describe('generator', () => {
     const codexExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
-    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+    const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
     const windsurfExists = await fs.access(join(testDir, '.windsurfrules'))
@@ -702,14 +576,13 @@ describe('generator', () => {
 
     console.log('Files created:', {
       codex: codexExists,
-      cursor: cursorExists,
+      agents: agentsExists,
       windsurf: windsurfExists,
       copilot: copilotExists,
       claude: claudeExists
     });
 
     expect(codexExists).toBe(true);
-    expect(cursorExists).toBe(false);
     expect(windsurfExists).toBe(false);
     expect(copilotExists).toBe(false);
     expect(claudeExists).toBe(false);
@@ -751,19 +624,19 @@ describe('generator', () => {
 
     expect(result.success).toBe(true);
 
-    // Verify .cursorrules was created
-    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+    // Verify AGENTS.md was created
+    const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
-    expect(cursorExists).toBe(true);
+    expect(agentsExists).toBe(true);
 
     // Verify content order
-    const cursorContent = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     
     // Check that files appear in the order specified in sources array
-    const secondIndex = cursorContent.indexOf('# From second.md:');
-    const firstIndex = cursorContent.indexOf('# From first.md:');
-    const thirdIndex = cursorContent.indexOf('# From third.md:');
+    const secondIndex = agents.indexOf('# From second.md:');
+    const firstIndex = agents.indexOf('# From first.md:');
+    const thirdIndex = agents.indexOf('# From third.md:');
     
     expect(secondIndex).toBeGreaterThan(-1);
     expect(firstIndex).toBeGreaterThan(-1);
@@ -774,9 +647,9 @@ describe('generator', () => {
     expect(firstIndex).toBeLessThan(thirdIndex);
     
     // Verify content is present
-    expect(cursorContent).toContain('This should appear first.');
-    expect(cursorContent).toContain('This should appear second.');
-    expect(cursorContent).toContain('This should appear third.');
+    expect(agents).toContain('This should appear first.');
+    expect(agents).toContain('This should appear second.');
+    expect(agents).toContain('This should appear third.');
   });
 
   it('should handle glob patterns with alphabetical ordering within the group', async () => {
@@ -815,21 +688,21 @@ describe('generator', () => {
 
     expect(result.success).toBe(true);
 
-    // Verify .cursorrules was created
-    const cursorExists = await fs.access(join(testDir, '.cursorrules'))
+    // Verify AGENTS.md was created
+    const agentsExists = await fs.access(join(testDir, 'AGENTS.md'))
       .then(() => true)
       .catch(() => false);
-    expect(cursorExists).toBe(true);
+    expect(agentsExists).toBe(true);
 
     // Verify content order
-    const cursorContent = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const agents = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     
     // Check that files appear in the correct order
-    const firstIndex = cursorContent.indexOf('# From first.md:');
-    const aIndex = cursorContent.indexOf('# From docs/a.md:');
-    const bIndex = cursorContent.indexOf('# From docs/b.md:');
-    const cIndex = cursorContent.indexOf('# From docs/c.md:');
-    const lastIndex = cursorContent.indexOf('# From last.md:');
+    const firstIndex = agents.indexOf('# From first.md:');
+    const aIndex = agents.indexOf('# From docs/a.md:');
+    const bIndex = agents.indexOf('# From docs/b.md:');
+    const cIndex = agents.indexOf('# From docs/c.md:');
+    const lastIndex = agents.indexOf('# From last.md:');
     
     expect(firstIndex).toBeGreaterThan(-1);
     expect(aIndex).toBeGreaterThan(-1);
@@ -844,10 +717,10 @@ describe('generator', () => {
     expect(cIndex).toBeLessThan(lastIndex);
     
     // Verify content is present
-    expect(cursorContent).toContain('This should appear first overall.');
-    expect(cursorContent).toContain('This should appear first in docs.');
-    expect(cursorContent).toContain('This should appear second in docs.');
-    expect(cursorContent).toContain('This should appear third in docs.');
-    expect(cursorContent).toContain('This should appear last overall.');
+    expect(agents).toContain('This should appear first overall.');
+    expect(agents).toContain('This should appear first in docs.');
+    expect(agents).toContain('This should appear second in docs.');
+    expect(agents).toContain('This should appear third in docs.');
+    expect(agents).toContain('This should appear last overall.');
   });
 });

@@ -84,19 +84,19 @@ describe('workflow', () => {
     expect(genOutput).toContain('✗ non-existent.md');
     expect(genOutput).toContain('✅ AI context files generated successfully');
 
-    // Step 4: Verify cursor rules content
-    const cursorRules = await readFile('.cursorrules', 'utf8');
+    // Step 4: Verify cursor rules content (AGENTS.md)
+    const agents = await readFile('AGENTS.md', 'utf8');
     
     // Should contain content from both files
-    expect(cursorRules).toContain('Test Project');
-    expect(cursorRules).toContain('Documentation');
+    expect(agents).toContain('Test Project');
+    expect(agents).toContain('Documentation');
     
     // Should have proper structure
-    expect(cursorRules).toMatch(/# From README\.md:/);
-    expect(cursorRules).toMatch(/# From docs\/guide\.md:/);
+    expect(agents).toMatch(/# From README\.md:/);
+    expect(agents).toMatch(/# From docs\/guide\.md:/);
     
     // Should not contain non-existent file
-    expect(cursorRules).not.toContain('non-existent.md');
+    expect(agents).not.toContain('non-existent.md');
   });
 
   it('should update rules when source files change', async () => {
@@ -129,7 +129,7 @@ describe('workflow', () => {
     expect(genOutput).toContain('✓ docs/guide.md');
     expect(genOutput).toContain('✅ AI context files generated successfully');
 
-    const initialRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const initialRules = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     expect(initialRules).toContain('Initial Project');
     expect(initialRules).toContain('Initial Guide');
 
@@ -147,7 +147,7 @@ describe('workflow', () => {
     expect(regenOutput).toContain('✅ AI context files generated successfully');
 
     // Step 4: Verify updated content
-    const updatedRules = await readFile(join(testDir, '.cursorrules'), 'utf8');
+    const updatedRules = await readFile(join(testDir, 'AGENTS.md'), 'utf8');
     
     // Should contain new content
     expect(updatedRules).toContain('Updated Project');
@@ -193,7 +193,7 @@ describe('workflow', () => {
     
     // Verify output files were created
     const outputFiles = await readdir(testDir);
-    expect(outputFiles).toContain('.cursorrules');
+    expect(outputFiles).toContain('AGENTS.md');
     expect(outputFiles).toContain('.airul.json');
     expect(outputFiles).toContain('README.md');
     expect(outputFiles).toContain('docs');
@@ -250,14 +250,14 @@ describe('workflow', () => {
     expect(updatedConfig2.output.windsurf).toBe(false); // Still disabled - gen doesn't update config
     
     // But Windsurf file should be generated anyway based on the command line flag
-    const cursorExists = await readFile('.cursorrules')
+    const agentsExists = await readFile('AGENTS.md')
       .then(() => true)
       .catch(() => false);
     const windsurfExists = await readFile('.windsurfrules')
       .then(() => true)
       .catch(() => false);
     
-    expect(cursorExists).toBe(true);
+    expect(agentsExists).toBe(true);
     expect(claudeExists).toBe(true);
     expect(windsurfExists).toBe(true); // File should be generated even though config wasn't updated
     

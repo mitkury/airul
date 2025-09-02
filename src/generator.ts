@@ -199,8 +199,23 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
     writePromises.push(fs.writeFile(path.join(baseDir, '.windsurfrules'), fullContent));
   }
 
-  if (mergedConfig.output.cursor) {
-    writePromises.push(fs.writeFile(path.join(baseDir, '.cursorrules'), fullContent));
+  // Determine if we should write AGENTS.md (cursor and/or codex)
+  const shouldWriteAgents = Boolean(mergedConfig.output.cursor || mergedConfig.output.codex);
+  if (shouldWriteAgents) {
+    writePromises.push(fs.writeFile(path.join(baseDir, 'AGENTS.md'), fullContent));
+
+    // If cursor is enabled, remove legacy .cursorrules if it exists
+    if (mergedConfig.output.cursor) {
+      const legacyCursorPath = path.join(baseDir, '.cursorrules');
+      try {
+        await fs.unlink(legacyCursorPath);
+      } catch (err: any) {
+        // Ignore if file doesn't exist
+        if (err && err.code !== 'ENOENT') {
+          console.warn(`Warning: could not remove legacy .cursorrules: ${err.message || String(err)}`);
+        }
+      }
+    }
   }
 
   if (mergedConfig.output.cline) {
@@ -209,10 +224,6 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
 
   if (mergedConfig.output.claude) {
     writePromises.push(fs.writeFile(path.join(baseDir, 'CLAUDE.md'), fullContent));
-  }
-
-  if (mergedConfig.output.codex) {
-    writePromises.push(fs.writeFile(path.join(baseDir, 'AGENTS.md'), fullContent));
   }
 
   if (mergedConfig.output.copilot) {

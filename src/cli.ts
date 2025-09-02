@@ -123,7 +123,7 @@ program
   .option('-c, --config <path>', 'Path to .airul.json config file. Default: .airul.json in current directory')
   .option('-s, --sources <globs...>', 'Source files to process (e.g., "docs/*.md"). Overrides sources in config file')
   .option('--windsurf', 'Enable .windsurfrules output for Windsurf IDE')
-  .option('--cursor', 'Enable .cursorrules output for Cursor IDE')
+  .option('--cursor', 'Enable AGENTS.md output for Cursor IDE')
   .option('--copilot', 'Enable GitHub Copilot output')
   .option('--code', 'Alias for --copilot')
   .option('--cline', 'Enable Cline VSCode extension output')

@@ -46,9 +46,9 @@ describe('init command', () => {
     const todoContent = await readFile(todoPath, 'utf8');
     expect(todoContent).toContain('# AI Workspace');
 
-    // Verify cursor rules were generated from TODO-AI.md
-    const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
-    expect(cursorRules).toContain('AI Workspace');
+    // Verify Cursor (AGENTS.md) was generated from TODO-AI.md
+    const agents = await readFile(join(TEST_DIRS.INIT, 'AGENTS.md'), 'utf8');
+    expect(agents).toContain('AI Workspace');
   });
 
   it('should generate rules if documentation exists', async () => {
@@ -64,9 +64,9 @@ describe('init command', () => {
     expect(result2.success).toBe(true);
     expect(result2.processedFiles.get('TODO-AI.md')).toBe(true);
     
-    // Verify cursor rules file was created (windsurf should not be)
-    const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
-    expect(cursorRules).toContain('Test Project');
+    // Verify AGENTS.md file was created (windsurf should not be)
+    const agents = await readFile(join(TEST_DIRS.INIT, 'AGENTS.md'), 'utf8');
+    expect(agents).toContain('Test Project');
     
     // Verify windsurf rules were not created
     await expect(readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8'))
@@ -132,16 +132,16 @@ describe('init command', () => {
     expect(result.configCreated).toBe(true);
     expect(result.rulesGenerated).toBe(true);
     
-    // Verify both rule files were created
-    const cursorRules = await readFile(join(TEST_DIRS.INIT, '.cursorrules'), 'utf8');
+    // Verify rule files were created
+    const agents = await readFile(join(TEST_DIRS.INIT, 'AGENTS.md'), 'utf8');
     const windsurfRules = await readFile(join(TEST_DIRS.INIT, '.windsurfrules'), 'utf8');
     
     // Both should contain the initial content
-    expect(cursorRules).toContain('Test Project');
+    expect(agents).toContain('Test Project');
     expect(windsurfRules).toContain('Test Project');
     
     // Content should be identical
-    expect(cursorRules).toBe(windsurfRules);
+    expect(agents).toBe(windsurfRules);
     
     // When only windsurf is enabled
     const windsurfOnlyDir = join(TEST_DIRS.INIT, 'windsurf-only');
@@ -155,9 +155,9 @@ describe('init command', () => {
       copilot: false
     });
     
-    // Should have windsurfrules but not cursorrules
+    // Should have windsurfrules but not agents for cursor
     await expect(readFile(join(windsurfOnlyDir, '.windsurfrules'), 'utf8')).resolves.toBeDefined();
-    await expect(readFile(join(windsurfOnlyDir, '.cursorrules'), 'utf8')).rejects.toThrow();
+    await expect(readFile(join(windsurfOnlyDir, 'AGENTS.md'), 'utf8')).rejects.toThrow();
   });
 
   it('should generate Copilot instructions when enabled', async () => {
@@ -290,10 +290,10 @@ describe('init command', () => {
     expect(updatedConfig.output.windsurf).toBe(false); // Still false in config
     
     // But Windsurf file should still be generated
-    const cursorPath = join(TEST_DIRS.INIT, '.cursorrules');
+    const agentsPath = join(TEST_DIRS.INIT, 'AGENTS.md');
     const windsurfPath = join(TEST_DIRS.INIT, '.windsurfrules');
     
-    const cursorExists = await readFile(cursorPath, 'utf8')
+    const agentsExists = await readFile(agentsPath, 'utf8')
       .then(() => true)
       .catch(() => false);
     
@@ -301,7 +301,7 @@ describe('init command', () => {
       .then(() => true)
       .catch(() => false);
     
-    expect(cursorExists).toBe(true);
+    expect(agentsExists).toBe(true);
     expect(windsurfExists).toBe(true); // File should be generated even though config wasn't updated
   });
 });
