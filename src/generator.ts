@@ -181,7 +181,8 @@ export async function generateRules(options: GenerateOptions): Promise<GenerateR
 
   // Add intro context and join contents with separator
   const separator = mergedConfig.template?.separator || '\n---\n';
-  const intro = prompts.contextIntro(validContents.length) + '\n\n';
+  const includeTodoReminder = mergedConfig.sources.some((s) => s.includes('TODO-AI.md'));
+  const intro = prompts.contextIntro(validContents.length, includeTodoReminder) + '\n\n';
   const fullContent = intro + validContents.join(`${separator}\n`);
 
   // Write output files based on configuration
