@@ -1,32 +1,10 @@
-# Dependencies
-node_modules/
-
-# Build output
-dist/
-
-# IDE
+# Editor files
 .vscode/
 .idea/
 
-# Logs
-*.log
-npm-debug.log*
-
-# Test coverage
-coverage/
-
-# Environment variables
-.env
-.env.local
-
-# OS
+# Local files
 .DS_Store
 Thumbs.db
-
-# Test outputs
-test/__test_outputs__/
-test/project/
-
-.windsurfrules
-.cursorrules
-CLAUDE.md
+*.log
+.env
+.env.local
