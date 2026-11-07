@@ -4,6 +4,16 @@ Short, opinionated instructions for AI agents. Rules guide ongoing work; actions
 
 Use individual files or add the collection as a submodule in any directory. Local instructions take precedence.
 
+To keep a pinned copy, run this from your repository root.
+
+```sh
+git submodule add https://github.com/mitkury/airul.git vendor/airul
+```
+
+Then add a line such as `Read [how to code](vendor/airul/rules/how-to-code.md).`
+to your repository's `AGENTS.md`. In an existing checkout, fetch the pinned
+files with `git submodule update --init vendor/airul`.
+
 ## Actions
 
 - [Remove](actions/remove.md): improve through subtraction.
